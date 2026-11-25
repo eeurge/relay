@@ -41,15 +41,6 @@
           <input type="password" id="gate-password" class="input" placeholder="••••••••••••" required />
         </div>
 
-        <div>
-          <span class="label">Temporary logins (click to fill):</span>
-          <div class="temp-chips">
-            <button type="button" class="temp-chip" data-gate-fill="admin@relay.dev" data-gate-pass="RelayAdmin!2026">Super Admin</button>
-            <button type="button" class="temp-chip" data-gate-fill="partner@relay.dev" data-gate-pass="RelayPartner!2026">Partner Admin</button>
-            <button type="button" class="temp-chip" data-gate-fill="vendor@acme.io" data-gate-pass="VendorDemo!2026">Vendor Demo</button>
-          </div>
-        </div>
-
         <div id="gate-error" style="color:#fca5a5; font-size:0.8125rem;" hidden></div>
         <button type="submit" class="btn btn--primary btn--lg btn--full">Sign in</button>
       </form>
@@ -69,7 +60,7 @@
             </span>
             <span>Relay</span>
           </a>
-          <span class="badge badge--green" id="sidebar-stripe-mode">SANDBOX</span>
+          <span class="badge badge--green" id="sidebar-stripe-mode">NOT CONNECTED</span>
         </div>
 
         <div class="nav-group-label">Monitor</div>
@@ -118,7 +109,7 @@
       <header class="topbar">
         <div class="topbar-title" id="topbar-title">Overview</div>
         <div class="topbar-right">
-          <button type="button" class="btn btn--primary" id="admin-test-checkout-btn">Run Stripe Plugin Test</button>
+          <button type="button" class="btn btn--primary" id="admin-test-checkout-btn">Preview checkout</button>
           <a href="/" class="btn btn--secondary">Live Site &nearr;</a>
         </div>
       </header>
@@ -254,7 +245,7 @@
             <div class="panel">
               <div class="panel-head">
                 <span class="panel-title">Stripe Connection Diagnostics</span>
-                <span class="badge badge--green" id="diag-mode-badge">SANDBOX</span>
+                <span class="badge badge--green" id="diag-mode-badge">NOT CONNECTED</span>
               </div>
               <div class="panel-body" id="stripe-diag-body"></div>
             </div>
@@ -354,7 +345,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="relay-plugin.js" data-vendor="vnd_acme01"></script>
+  <script src="relay-plugin.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

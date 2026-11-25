@@ -210,7 +210,7 @@
         doneWrap.hidden = false;
         doneWrap.innerHTML = `
           <div class="rp-receipt">
-            <div style="font-weight:700; color:#34d399; margin-bottom:4px;">Payment Captured (Sandbox Mode) &middot; ${escapeHtml(data.order.id)}</div>
+            <div style="font-weight:700; color:#34d399; margin-bottom:4px;">Payment recorded &middot; ${escapeHtml(data.order.id)}</div>
             <div style="color:#cbd5e1; font-size:12px;">
               Gross: ${formatMoney(data.order.gross)} &middot; Relay Fee: ${formatMoney(data.order.fee)} &middot; Vendor Net: <strong>${formatMoney(data.order.net)}</strong>
             </div>

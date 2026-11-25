@@ -73,7 +73,7 @@
           <div>
             <div class="status-chip">
               <span class="pulse-dot" aria-hidden="true"></span>
-              <span id="hero-status-text">Stripe &amp; PayPal rails active &middot; 99.96% uptime</span>
+              <span id="hero-status-text">Accepting vendor applications</span>
             </div>
 
             <h1 class="hero-title">
@@ -89,8 +89,7 @@
                 <span>Apply as vendor</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </button>
-              <a href="#plugin" class="btn btn--secondary btn--lg">How Stripe plugin works</a>
-              <button type="button" class="btn btn--ghost btn--lg" data-open-signin>Admin Sign in</button>
+              <a href="#plugin" class="btn btn--secondary btn--lg">How the embed works</a>
             </div>
 
             <div class="hero-rails-row">
@@ -102,22 +101,22 @@
           </div>
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
-          <div class="sandbox-card" aria-label="Interactive Relay Stripe checkout sandbox">
+          <div class="sandbox-card" aria-label="Example Relay checkout">
             <div class="sandbox-top">
               <span class="sandbox-title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
-                Live Plugin Checkout
+                Checkout
               </span>
-              <span class="mode-badge" id="stripe-mode-badge">SANDBOX READY</span>
+              <span class="mode-badge" id="stripe-mode-badge">EXAMPLE</span>
             </div>
 
             <div class="sandbox-body">
               <div class="sandbox-store-row">
                 <div>
-                  <div class="sandbox-store-name" id="sb-item-label">Pro Suite Annual License</div>
-                  <div class="sandbox-store-sub">store.acme-digital.io &middot; vnd_acme01</div>
+                  <div class="sandbox-store-name" id="sb-item-label">Example Product</div>
+                  <div class="sandbox-store-sub">yourstore.com</div>
                 </div>
-                <div class="sandbox-price" id="sb-price-display">$149.00</div>
+                <div class="sandbox-price" id="sb-price-display">$49.00</div>
               </div>
 
               <div class="sandbox-methods" role="tablist" aria-label="Choose payment rail">
@@ -128,22 +127,22 @@
 
               <div class="sandbox-inputs">
                 <div>
-                  <label class="field-label" for="sb-amount">Test Amount (USD)</label>
-                  <input type="number" id="sb-amount" class="input" value="149" min="1" max="50000" />
+                  <label class="field-label" for="sb-amount">Amount (USD)</label>
+                  <input type="number" id="sb-amount" class="input" value="49" min="1" max="50000" />
                 </div>
                 <div>
                   <label class="field-label" for="sb-email">Customer Email</label>
-                  <input type="email" id="sb-email" class="input" value="buyer@example.com" />
+                  <input type="email" id="sb-email" class="input" placeholder="customer@email.com" />
                 </div>
               </div>
 
               <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">
-                Run Live Checkout ($149.00)
+                Pay $49.00
               </button>
 
               <div class="sandbox-console" id="sb-console">
-                <div><strong>[ready]</strong> Click Run Live Checkout to call <code>POST /api/stripe/create-checkout-session</code>.</div>
-                <div>New orders stream directly into the <strong>Admin Panel</strong>.</div>
+                <div>This is the checkout your vendors place on a product page.</div>
+                <div>Customers pay by card, PayPal, Apple Pay, or Google Pay. You approve the vendor, then the order shows up in Admin.</div>
               </div>
             </div>
           </div>
@@ -159,24 +158,24 @@
         <div class="metrics-grid">
           <div class="metric-card">
             <div>
-              <div class="metric-val">$14.8M+</div>
-              <div class="metric-label">Processed via Relay rails</div>
+              <div class="metric-val">1 script</div>
+              <div class="metric-label">Added to the vendor's product page</div>
+            </div>
+            <span class="metric-chip">Drop-in embed</span>
+          </div>
+          <div class="metric-card">
+            <div>
+              <div class="metric-val">4 rails</div>
+              <div class="metric-label">Cards, PayPal, Apple Pay, Google Pay</div>
             </div>
             <span class="metric-chip">Stripe + PayPal</span>
           </div>
           <div class="metric-card">
             <div>
-              <div class="metric-val">99.96%</div>
-              <div class="metric-label">Checkout routing uptime</div>
+              <div class="metric-val">1 desk</div>
+              <div class="metric-label">Applications, orders, and payouts</div>
             </div>
-            <span class="metric-chip">Failover Pool</span>
-          </div>
-          <div class="metric-card">
-            <div>
-              <div class="metric-val">&lt; 5 min</div>
-              <div class="metric-label">Vendor embed integration</div>
-            </div>
-            <span class="metric-chip">1 Script Tag</span>
+            <span class="metric-chip">Admin panel</span>
           </div>
         </div>
       </div>
@@ -227,7 +226,6 @@
             </div>
             <div style="display:flex; gap:8px;">
               <button type="button" class="btn btn--secondary btn--sm" id="copy-code-btn">Copy snippet</button>
-              <button type="button" class="btn btn--primary btn--sm" data-relay-checkout data-vendor="vnd_acme01" data-item="Relay Plugin Live Demo" data-amount="79" data-rail="stripe">Launch Plugin Modal</button>
             </div>
           </div>
 
@@ -413,7 +411,7 @@
               <span>How do I connect a live Stripe account to Relay?</span>
               <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
             </button>
-            <div class="faq-panel"><div class="faq-panel-inner">Add your <code>STRIPE_PUBLISHABLE_KEY</code>, <code>STRIPE_SECRET_KEY</code>, and <code>STRIPE_WEBHOOK_SECRET</code> to the <code>.env</code> file and restart <code>node server.js</code>. Relay automatically switches from Sandbox Simulator to real Stripe Hosted Checkout sessions.</div></div>
+            <div class="faq-panel"><div class="faq-panel-inner">Create a Stripe account, add the secret key, publishable key, and webhook secret in your host's environment settings, and set the site address to your domain. Checkout on vendor sites then opens Stripe's payment page.</div></div>
           </div>
           <div class="faq-item">
             <button type="button" class="faq-trigger" aria-expanded="false">
@@ -424,10 +422,10 @@
           </div>
           <div class="faq-item">
             <button type="button" class="faq-trigger" aria-expanded="false">
-              <span>How do temporary Admin and partner logins work?</span>
+              <span>Where do vendor applications go?</span>
               <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
             </button>
-            <div class="faq-panel"><div class="faq-panel-inner">Relay ships with pre-seeded temporary logins for founders, co-founders/partners, and a demo vendor. Inside the Admin Panel under <strong>Temp Logins</strong>, you can mint new role-scoped temporary credentials with custom expiry windows or revoke them instantly.</div></div>
+            <div class="faq-panel"><div class="faq-panel-inner">Every application is saved the moment they submit the form. Sign in and open <strong>Admin → Vendors</strong>. Approve the store, then send them the embed snippet from that same page.</div></div>
           </div>
           <div class="faq-item">
             <button type="button" class="faq-trigger" aria-expanded="false">
@@ -448,11 +446,11 @@
         <div class="cta-box">
           <h2 class="section-title">Ready to launch Relay on your storefront?</h2>
           <p class="section-lead" style="max-width:520px; margin:0 auto 28px;">
-            Apply as a vendor in seconds, or sign in to the Admin Control Plane with a temporary login to test the full Stripe checkout and payout workflow.
+            Apply as a vendor. Applications land in the admin panel for approval, and the embed goes on the vendor's product page after you approve them.
           </p>
           <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
             <button type="button" class="btn btn--primary btn--lg" data-open-apply>Apply as vendor</button>
-            <button type="button" class="btn btn--secondary btn--lg" data-open-signin>Open Admin Panel</button>
+            <a href="#plugin" class="btn btn--secondary btn--lg">See the embed</a>
           </div>
         </div>
       </div>
@@ -520,20 +518,11 @@
       <form id="signin-form" class="form-stack">
         <div>
           <label class="field-label" for="login-email">Email</label>
-          <input type="email" id="login-email" class="input" placeholder="admin@relay.dev" required />
+          <input type="email" id="login-email" class="input" placeholder="you@email.com" required />
         </div>
         <div>
           <label class="field-label" for="login-password">Password</label>
           <input type="password" id="login-password" class="input" placeholder="••••••••••••" required />
-        </div>
-
-        <div>
-          <span class="field-label">Quick-fill temporary logins:</span>
-          <div class="temp-chips">
-            <button type="button" class="temp-chip" data-fill-login="admin@relay.dev" data-fill-pass="RelayAdmin!2026">Super Admin</button>
-            <button type="button" class="temp-chip" data-fill-login="partner@relay.dev" data-fill-pass="RelayPartner!2026">Partner Admin</button>
-            <button type="button" class="temp-chip" data-fill-login="vendor@acme.io" data-fill-pass="VendorDemo!2026">Vendor Demo</button>
-          </div>
         </div>
 
         <div id="signin-error" class="alert-err" hidden></div>
@@ -559,7 +548,7 @@
         <div class="form-row-2">
           <div>
             <label class="field-label" for="app-name">Store Name</label>
-            <input type="text" id="app-name" class="input" placeholder="Acme Digital" required />
+            <input type="text" id="app-name" class="input" placeholder="Store name" required />
           </div>
           <div>
             <label class="field-label" for="app-url">Website URL</label>
@@ -595,13 +584,13 @@
           </div>
         </div>
         <div id="apply-error" class="alert-err" hidden></div>
-        <button type="submit" class="btn btn--primary btn--lg btn--full">Submit &amp; Generate Sandbox Embed</button>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Submit application</button>
       </form>
 
       <div id="apply-result" hidden>
-        <div style="color: var(--accent-text); font-weight: 700; margin-bottom: 6px;">Application Received &middot; Sandbox Key Ready</div>
+        <div style="color: var(--accent-text); font-weight: 700; margin-bottom: 6px;">Application received</div>
         <p style="font-size: 0.875rem; color: var(--text-muted);">
-          Your storefront is queued in <strong>Admin &rarr; Vendors</strong>. Paste this embed onto your checkout page to test immediately:
+          Relay has your application. After approval, paste this embed on the product page. Change <strong>Example Product</strong> and the price to the real item.
         </p>
         <pre class="snippet-pre" id="apply-snippet"></pre>
         <div class="form-row-2">
@@ -614,7 +603,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="relay-plugin.js" data-vendor="vnd_acme01"></script>
+  <script src="relay-plugin.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

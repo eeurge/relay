@@ -62,14 +62,10 @@ function makeUserRecord({ id, name, email, password, role, temp = true, expiresA
 }
 
 function createInitialStore() {
-  const now = Date.now();
-  const in7Days = new Date(now + 7 * 24 * 3600 * 1000).toISOString();
-  const in30Days = new Date(now + 30 * 24 * 3600 * 1000).toISOString();
-
   return {
     settings: {
       brandName: 'Relay',
-      statusText: 'Stripe & PayPal rails active · 99.96% uptime',
+      statusText: 'Accepting vendor applications',
       acceptingApplications: true,
       rails: {
         stripe: true,
@@ -94,178 +90,23 @@ function createInitialStore() {
         password: 'RelayAdmin!2026',
         role: 'super_admin',
         temp: true,
-        expiresAt: in30Days,
-        note: 'Primary temporary founder login (full control)'
+        expiresAt: null,
+        note: 'Founder login'
       }),
       makeUserRecord({
         id: 'usr_partner_2',
-        name: 'Co-Founder / Partner',
+        name: 'Partner',
         email: 'partner@relay.dev',
         password: 'RelayPartner!2026',
         role: 'admin',
         temp: true,
-        expiresAt: in30Days,
-        note: 'Shared temporary admin login for collaborator'
-      }),
-      makeUserRecord({
-        id: 'usr_vendor_3',
-        name: 'Acme Digital Store',
-        email: 'vendor@acme.io',
-        password: 'VendorDemo!2026',
-        role: 'vendor',
-        temp: true,
-        expiresAt: in7Days,
-        note: 'Temporary vendor demo portal access'
+        expiresAt: null,
+        note: 'Partner login'
       })
     ],
-    vendors: [
-      {
-        id: 'vnd_acme01',
-        name: 'Acme Digital',
-        website: 'https://store.acme-digital.io',
-        contact: '@acme_owner',
-        tier: 'growth',
-        rate: 6.0,
-        status: 'active',
-        rails: { stripe: true, paypal: true },
-        payoutMethod: 'USDT (TRC-20)',
-        payoutDest: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
-        apiKey: 'rl_live_acme_98a4f2c10b',
-        monthlyVolume: 38400,
-        createdAt: new Date(now - 28 * 86400000).toISOString()
-      },
-      {
-        id: 'vnd_kestrel02',
-        name: 'Kestrel Software',
-        website: 'https://kestrel-labs.io',
-        contact: '@kestrel_ops',
-        tier: 'enterprise',
-        rate: 4.5,
-        status: 'active',
-        rails: { stripe: true, paypal: true },
-        payoutMethod: 'USDT (ERC-20)',
-        payoutDest: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-        apiKey: 'rl_live_kest_44e19c87a2',
-        monthlyVolume: 64200,
-        createdAt: new Date(now - 45 * 86400000).toISOString()
-      },
-      {
-        id: 'vnd_nova03',
-        name: 'Nova Keyshop',
-        website: 'https://novakeys.gg',
-        contact: '@nova_dev',
-        tier: 'starter',
-        rate: 8.0,
-        status: 'pending',
-        rails: { stripe: true, paypal: false },
-        payoutMethod: 'BTC',
-        payoutDest: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
-        apiKey: 'rl_test_nova_12c88d90f1',
-        monthlyVolume: 7500,
-        createdAt: new Date(now - 1 * 86400000).toISOString()
-      }
-    ],
-    orders: [
-      {
-        id: 'RL-8492',
-        vendorId: 'vnd_acme01',
-        vendorName: 'Acme Digital',
-        item: 'Pro Suite Annual License',
-        customerEmail: 'buyer.alex@gmail.com',
-        rail: 'stripe',
-        gross: 149.0,
-        fee: 9.24,
-        net: 139.76,
-        status: 'paid',
-        webhookStatus: '200 OK',
-        stripeRef: 'pi_3Qx94aRelay8492',
-        createdAt: new Date(now - 24 * 60000).toISOString()
-      },
-      {
-        id: 'RL-8489',
-        vendorId: 'vnd_kestrel02',
-        vendorName: 'Kestrel Software',
-        item: 'Team Seat Bundle (10x)',
-        customerEmail: 'ops@northstar.co',
-        rail: 'paypal',
-        gross: 480.0,
-        fee: 26.7,
-        net: 453.3,
-        status: 'settled',
-        webhookStatus: '200 OK',
-        stripeRef: 'pp_9VH84210K8489',
-        createdAt: new Date(now - 3 * 3600000).toISOString()
-      },
-      {
-        id: 'RL-8485',
-        vendorId: 'vnd_acme01',
-        vendorName: 'Acme Digital',
-        item: 'Creator Pack v4',
-        customerEmail: 'marcus.w@icloud.com',
-        rail: 'wallets',
-        gross: 79.0,
-        fee: 5.04,
-        net: 73.96,
-        status: 'paid',
-        webhookStatus: '200 OK',
-        stripeRef: 'pi_3Qx81cApple8485',
-        createdAt: new Date(now - 6 * 3600000).toISOString()
-      },
-      {
-        id: 'RL-8478',
-        vendorId: 'vnd_kestrel02',
-        vendorName: 'Kestrel Software',
-        item: 'Enterprise API Add-on',
-        customerEmail: 'billing@gridwave.dev',
-        rail: 'stripe',
-        gross: 890.0,
-        fee: 40.35,
-        net: 849.65,
-        status: 'settled',
-        webhookStatus: '200 OK',
-        stripeRef: 'pi_3Qx70fRelay8478',
-        createdAt: new Date(now - 19 * 3600000).toISOString()
-      },
-      {
-        id: 'RL-8471',
-        vendorId: 'vnd_acme01',
-        vendorName: 'Acme Digital',
-        item: 'Starter License Key',
-        customerEmail: 'h.sato@proton.me',
-        rail: 'paypal',
-        gross: 39.0,
-        fee: 3.03,
-        net: 35.97,
-        status: 'refunded',
-        webhookStatus: '200 OK',
-        stripeRef: 'pp_4AB12098J8471',
-        createdAt: new Date(now - 29 * 3600000).toISOString()
-      }
-    ],
-    payouts: [
-      {
-        id: 'PO-2041',
-        vendorId: 'vnd_acme01',
-        vendorName: 'Acme Digital',
-        amount: 213.72,
-        method: 'USDT (TRC-20)',
-        destination: 'TQn9Y2khEsLJW1ChVWFMSMeRDow5KcbLSE',
-        status: 'pending',
-        txHash: null,
-        createdAt: new Date(now - 18 * 60000).toISOString()
-      },
-      {
-        id: 'PO-2039',
-        vendorId: 'vnd_kestrel02',
-        vendorName: 'Kestrel Software',
-        amount: 1302.95,
-        method: 'USDT (ERC-20)',
-        destination: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-        status: 'paid',
-        txHash: '0x8a4f9c2e11b7d40a...9c12',
-        createdAt: new Date(now - 14 * 3600000).toISOString()
-      }
-    ]
+    vendors: [],
+    orders: [],
+    payouts: []
   };
 }
 
@@ -361,6 +202,7 @@ function calculateCommission(gross, rail, vendorRate) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 
 // ---------------------------------------------------------------------------
 // Stripe Webhook Endpoint (MUST receive raw body before express.json)
@@ -593,7 +435,7 @@ app.post('/api/public/apply', (req, res) => {
   const tier = vol >= 50000 ? 'enterprise' : vol >= 10000 ? 'growth' : 'starter';
   const rate = store.settings.commissions[tier];
   const id = `vnd_${crypto.randomBytes(3).toString('hex')}`;
-  const apiKey = `rl_test_${crypto.randomBytes(8).toString('hex')}`;
+  const apiKey = `rl_${crypto.randomBytes(8).toString('hex')}`;
 
   const vendor = {
     id,
@@ -619,7 +461,7 @@ app.post('/api/public/apply', (req, res) => {
 
   res.status(201).json({
     vendor,
-    embedSnippet: `<script src="${BASE_URL}/relay-plugin.js" data-vendor="${vendor.id}" data-key="${vendor.apiKey}"></script>\n<button data-relay-checkout data-item="Pro Plan" data-amount="49.00" data-rail="stripe">Pay with Card / PayPal</button>`
+    embedSnippet: `<script src="${BASE_URL}/relay-plugin.js" data-vendor="${vendor.id}" data-key="${vendor.apiKey}"></script>\n<button data-relay-checkout data-item="Example Product" data-amount="49.00" data-rail="stripe">Pay now</button>`
   });
 });
 
@@ -653,7 +495,7 @@ app.post('/api/auth/login', (req, res) => {
 
   res.setHeader(
     'Set-Cookie',
-    `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400`
+    `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400${BASE_URL.startsWith('https://') ? '; Secure' : ''}`
   );
   res.json({
     token,
@@ -709,15 +551,7 @@ app.get('/api/admin/overview', requireAuth, (req, res) => {
       pendingVendors: store.vendors.filter((v) => v.status === 'pending').length,
       totalOrders: visibleOrders.length
     },
-    chart7d: [
-      { day: 'Thu', volume: 1820 },
-      { day: 'Fri', volume: 2640 },
-      { day: 'Sat', volume: 2190 },
-      { day: 'Sun', volume: 3120 },
-      { day: 'Mon', volume: 2890 },
-      { day: 'Tue', volume: 3740 },
-      { day: 'Today', volume: Math.max(920, Math.round(grossVolume)) }
-    ],
+    chart7d: buildChart7d(visibleOrders),
     stripe: {
       connected: hasRealStripeKey,
       mode: hasRealStripeKey
@@ -893,9 +727,36 @@ app.delete('/api/admin/temp-logins/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+function buildChart7d(orders) {
+  const days = [];
+  for (let i = 6; i >= 0; i -= 1) {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - i);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1);
+    const volume = orders
+      .filter((order) => order.status !== 'refunded')
+      .filter((order) => {
+        const created = new Date(order.createdAt).getTime();
+        return created >= start.getTime() && created < end.getTime();
+      })
+      .reduce((sum, order) => sum + Number(order.gross || 0), 0);
+    days.push({
+      day: i === 0 ? 'Today' : start.toLocaleDateString('en-US', { weekday: 'short' }),
+      volume: Math.round(volume * 100) / 100
+    });
+  }
+  return days;
+}
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, service: 'relay' });
+});
+
 // Serve static frontend files
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`Relay server listening at ${BASE_URL} (Stripe mode: ${hasRealStripeKey ? 'connected' : 'sandbox'})`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Relay server listening at ${BASE_URL} (Stripe ${hasRealStripeKey ? 'connected' : 'not connected'})`);
 });

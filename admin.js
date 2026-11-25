@@ -108,13 +108,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Live Stripe Plugin Test launcher inside Admin
   $('#admin-test-checkout-btn')?.addEventListener('click', () => {
+    const vendor = state?.vendors?.find((v) => v.status === 'active') || state?.vendors?.[0];
+    if (!vendor) {
+      showToast('Approve a vendor first. Applications show up under Vendors.');
+      return;
+    }
     window.RelayCheckout.open({
-      vendorId: 'vnd_acme01',
-      item: 'Admin Live Stripe Plugin Test',
+      vendorId: vendor.id,
+      item: 'Example Product',
       amountUsd: 99,
       rail: 'stripe',
       onSuccess: () => {
-        showToast('Live test payment captured — refreshing ledger!');
+        showToast('Checkout recorded. Refreshing the ledger.');
         refreshOverview();
       }
     });
@@ -142,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#nav-settings').hidden = !isAdmin;
     $('#add-vendor-panel').hidden = !isAdmin;
 
-    const modeBadgeText = state.stripe.mode === 'live' ? 'STRIPE LIVE' : state.stripe.mode === 'test' ? 'STRIPE TEST' : 'SANDBOX';
+    const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';
     $('#sidebar-stripe-mode').textContent = modeBadgeText;
     $('#diag-mode-badge').textContent = modeBadgeText;
 
@@ -226,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       o.customerEmail.toLowerCase().includes(query)
     );
 
-    $('#overview-orders-body').innerHTML = state.orders.slice(0, 5).map((o) => `
+    $('#overview-orders-body').innerHTML = state.orders.length ? state.orders.slice(0, 5).map((o) => `
       <tr>
         <td class="mono" style="color:#fff;font-weight:600;">${esc(o.id)}</td>
         <td>${esc(o.vendorName)}</td>
@@ -236,9 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="mono">${usd(o.net)}</td>
         <td>${statusBadge(o.status)}</td>
       </tr>
-    `).join('');
+    `).join('') : '<tr><td colspan="7" style="color:var(--text-muted);">No transactions yet. Approved vendor checkouts will show up here.</td></tr>';
 
-    $('#orders-table-body').innerHTML = filtered.map((o) => `
+    $('#orders-table-body').innerHTML = filtered.length ? filtered.map((o) => `
       <tr>
         <td class="mono" style="color:#fff;font-weight:600;">${esc(o.id)}</td>
         <td>
@@ -260,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${isAdmin ? `<button class="btn btn--secondary btn--xs" data-order-hook="${esc(o.id)}">Webhook</button>` : ''}
         </td>
       </tr>
-    `).join('');
+    `).join('') : '<tr><td colspan="9" style="color:var(--text-muted);">No transactions yet.</td></tr>';
 
     $$('[data-order-act]').forEach((b) => {
       b.addEventListener('click', async () => {
@@ -292,6 +297,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function renderVendors(isAdmin) {
+    if (!state.vendors.length) {
+      $('#vendors-table-body').innerHTML = '<tr><td colspan="7" style="color:var(--text-muted);">No applications yet. They appear here as soon as someone applies on the site.</td></tr>';
+      return;
+    }
     $('#vendors-table-body').innerHTML = state.vendors.map((v) => `
       <tr>
         <td>
@@ -423,7 +432,10 @@ document.addEventListener('DOMContentLoaded', () => {
       item('STRIPE_PUBLISHABLE_KEY', s.hasPublishableKey, s.hasPublishableKey ? 'Loaded from environment' : 'Add pk_test_... or pk_live_... to .env') +
       item('STRIPE_WEBHOOK_SECRET', s.hasWebhookSecret, s.webhookEndpoint);
 
-    $('#admin-embed-code').textContent = `<script src="${window.location.origin}/relay-plugin.js"\n  data-vendor="vnd_acme01"></script>\n\n<button data-relay-checkout\n  data-item="Pro License"\n  data-amount="149.00"\n  data-rail="stripe">\n  Pay with Card / PayPal\n</button>`;
+    const sample = state.vendors[0];
+    const vendorId = sample ? sample.id : 'vnd_yourid';
+    const vendorKey = sample ? sample.apiKey : 'rl_yourkey';
+    $('#admin-embed-code').textContent = `<script src="${window.location.origin}/relay-plugin.js"\n  data-vendor="${vendorId}"\n  data-key="${vendorKey}"></script>\n\n<button data-relay-checkout\n  data-item="Example Product"\n  data-amount="49.00"\n  data-rail="stripe">\n  Pay now\n</button>`;
   }
 
   // ------------------------------------------------------------------------

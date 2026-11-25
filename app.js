@@ -41,11 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCalculator();
       }
       const badge = $('#stripe-mode-badge');
-      if (badge) {
-        if (data.stripeMode === 'live') badge.textContent = 'STRIPE LIVE';
-        else if (data.stripeMode === 'test') badge.textContent = 'STRIPE TEST MODE';
-        else badge.textContent = 'SANDBOX READY';
-      }
+      if (badge) badge.textContent = data.stripeMode === 'live' ? 'LIVE' : 'EXAMPLE';
     } catch {}
   }
 
@@ -105,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncSandboxPrice() {
     const val = Math.max(1, Number(sbAmount?.value) || 149);
     if (sbPriceDisplay) sbPriceDisplay.textContent = formatUSD(val);
-    if (sbPayBtn) sbPayBtn.textContent = `Run Live Checkout (${formatUSD(val)})`;
+    if (sbPayBtn) sbPayBtn.textContent = `Pay ${formatUSD(val)}`;
   }
 
   sbAmount?.addEventListener('input', syncSandboxPrice);
@@ -117,43 +113,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  sbPayBtn?.addEventListener('click', async () => {
-    const amountUsd = Math.max(1, Number(sbAmount?.value) || 149);
-    const customerEmail = sbEmail?.value?.trim() || 'buyer@example.com';
-    sbPayBtn.disabled = true;
-    sbPayBtn.textContent = 'Creating checkout session...';
-
-    try {
-      const res = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vendorId: 'vnd_acme01',
-          item: 'Pro Suite Annual License',
-          amountUsd,
-          rail: sbRail,
-          customerEmail
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Checkout failed');
-
-      if (data.checkoutUrl) {
-        sbConsole.innerHTML = `<div><strong>[stripe]</strong> Redirecting to real Stripe Checkout (${data.sessionId})...</div>`;
-        window.location.href = data.checkoutUrl;
-        return;
-      }
-
+  sbPayBtn?.addEventListener('click', () => {
+    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
+    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'card';
+    if (sbConsole) {
       sbConsole.innerHTML = `
-        <div><strong>[${data.order.rail}]</strong> Order <strong>${data.order.id}</strong> captured (${formatUSD(data.order.gross)}) &middot; ref <code>${data.order.stripeRef}</code></div>
-        <div><strong>[ledger]</strong> Relay fee ${formatUSD(data.order.fee)} &rarr; Vendor net <strong>${formatUSD(data.order.net)}</strong> queued in Admin Panel.</div>
+        <div><strong>Example Product</strong> &middot; ${formatUSD(amountUsd)} via ${railLabel}.</div>
+        <div>On a vendor site this button opens checkout. You review the application in Admin, approve the store, and their customers pay there.</div>
       `;
-      showToast(`Order ${data.order.id} recorded in Admin Panel!`);
-    } catch (err) {
-      sbConsole.innerHTML = `<div style="color:#f87171;"><strong>[error]</strong> ${err.message}</div>`;
-    } finally {
-      sbPayBtn.disabled = false;
-      syncSandboxPrice();
     }
   });
 
@@ -164,18 +131,18 @@ document.addEventListener('DOMContentLoaded', () => {
     embed: {
       title: 'Zero PCI burden on the vendor',
       desc: 'Your vendor adds two lines of HTML onto any product page. Clicking the button invokes RelayCheckout.open(), calling your Relay backend to create a Stripe Checkout or PayPal session.',
-      code: `<!-- 1. Include Relay plugin once on the vendor website -->
-<script src="https://pay.yourdomain.com/relay-plugin.js"
-  data-vendor="vnd_acme01"
-  data-key="rl_live_acme_98a4f2c10b"></script>
+      code: `<!-- 1. Include Relay once on the vendor website -->
+<script src="${window.location.origin}/relay-plugin.js"
+  data-vendor="vnd_yourid"
+  data-key="rl_yourkey"></script>
 
-<!-- 2. Attach checkout to any Buy button -->
+<!-- 2. Attach checkout to the product button -->
 <button
   data-relay-checkout
-  data-item="Pro Suite Annual License"
-  data-amount="149.00"
+  data-item="Example Product"
+  data-amount="49.00"
   data-rail="stripe">
-  Pay with Card or PayPal
+  Pay now
 </button>`
     },
     backend: {
