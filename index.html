@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relay — Stripe &amp; PayPal Payment Rails for Online Vendors</title>
+  <meta name="description" content="Relay connects managed Stripe and PayPal payment options directly onto vendor websites with a drop-in checkout plugin, instant webhooks, and a full admin control plane." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2310b981'/%3E%3Cpath d='M9 11h10l-3-3m7 13H13l3 3' fill='none' stroke='%2304150e' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ======================================================================
+       Floating Glass Header (No top banner, no Vouches tab)
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="#top" class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 9h12l-3-3" />
+            <path d="M19 15H7l3 3" />
+          </svg>
+        </span>
+        <span>Relay</span>
+      </a>
+
+      <nav class="nav-pill" aria-label="Primary navigation">
+        <a href="#plugin" class="nav-link">Stripe Plugin</a>
+        <a href="#features" class="nav-link">Capabilities</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#faqs" class="nav-link">FAQ</a>
+      </nav>
+
+      <div class="header-actions">
+        <a href="/admin.html" class="session-pill" id="header-admin-pill" hidden>
+          <span class="pulse-dot" style="width:6px;height:6px;"></span>
+          <span>Admin Panel</span>
+        </a>
+        <button type="button" class="btn btn--ghost btn--sm header-desktop-btn" id="header-signin-btn" data-open-signin>Sign in</button>
+        <button type="button" class="btn btn--primary btn--sm header-desktop-btn" data-open-apply>Apply as vendor</button>
+        <button type="button" class="mobile-toggle" id="mobile-toggle" aria-label="Open menu" aria-expanded="false">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="mobile-drawer" id="mobile-drawer">
+      <div class="mobile-drawer-links">
+        <a href="#plugin">Stripe Plugin</a>
+        <a href="#features">Capabilities</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faqs">FAQ</a>
+        <a href="/admin.html">Admin Panel</a>
+      </div>
+      <div class="mobile-drawer-actions">
+        <button type="button" class="btn btn--secondary btn--full" data-open-signin>Sign in</button>
+        <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ====================================================================
+         Hero — Original Asymmetric Layout + Live Interactive Stripe Sandbox
+         ==================================================================== -->
+    <section class="hero">
+      <div class="hero-dots" aria-hidden="true"></div>
+      <div class="container">
+        <div class="hero-grid">
+          <div>
+            <div class="status-chip">
+              <span class="pulse-dot" aria-hidden="true"></span>
+              <span id="hero-status-text">Stripe &amp; PayPal rails active &middot; 99.96% uptime</span>
+            </div>
+
+            <h1 class="hero-title">
+              Drop-in <span>Stripe &amp; PayPal</span> payments for any storefront.
+            </h1>
+
+            <p class="hero-lead">
+              Relay plugs our verified Stripe and PayPal checkout infrastructure directly into vendor websites. Embed one lightweight script, collect customer payments worldwide, and manage every order, vendor rate, and payout from a unified control plane.
+            </p>
+
+            <div class="hero-cta-row">
+              <button type="button" class="btn btn--primary btn--lg" data-open-apply>
+                <span>Apply as vendor</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </button>
+              <a href="#plugin" class="btn btn--secondary btn--lg">How Stripe plugin works</a>
+              <button type="button" class="btn btn--ghost btn--lg" data-open-signin>Admin Sign in</button>
+            </div>
+
+            <div class="hero-rails-row">
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#10b981;"></span>Stripe Cards</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#38bdf8;"></span>PayPal Express</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#a78bfa;"></span>Apple &amp; Google Pay</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#f59e0b;"></span>USDT / BTC / Wire Payouts</span>
+            </div>
+          </div>
+
+          <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
+          <div class="sandbox-card" aria-label="Interactive Relay Stripe checkout sandbox">
+            <div class="sandbox-top">
+              <span class="sandbox-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+                Live Plugin Checkout
+              </span>
+              <span class="mode-badge" id="stripe-mode-badge">SANDBOX READY</span>
+            </div>
+
+            <div class="sandbox-body">
+              <div class="sandbox-store-row">
+                <div>
+                  <div class="sandbox-store-name" id="sb-item-label">Pro Suite Annual License</div>
+                  <div class="sandbox-store-sub">store.acme-digital.io &middot; vnd_acme01</div>
+                </div>
+                <div class="sandbox-price" id="sb-price-display">$149.00</div>
+              </div>
+
+              <div class="sandbox-methods" role="tablist" aria-label="Choose payment rail">
+                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe Card</button>
+                <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
+                <button type="button" class="sandbox-method" data-sb-rail="wallets">Apple / GPay</button>
+              </div>
+
+              <div class="sandbox-inputs">
+                <div>
+                  <label class="field-label" for="sb-amount">Test Amount (USD)</label>
+                  <input type="number" id="sb-amount" class="input" value="149" min="1" max="50000" />
+                </div>
+                <div>
+                  <label class="field-label" for="sb-email">Customer Email</label>
+                  <input type="email" id="sb-email" class="input" value="buyer@example.com" />
+                </div>
+              </div>
+
+              <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">
+                Run Live Checkout ($149.00)
+              </button>
+
+              <div class="sandbox-console" id="sb-console">
+                <div><strong>[ready]</strong> Click Run Live Checkout to call <code>POST /api/stripe/create-checkout-session</code>.</div>
+                <div>New orders stream directly into the <strong>Admin Panel</strong>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Compact Metric Strip
+         ==================================================================== -->
+    <section class="metrics-band" aria-label="Platform metrics">
+      <div class="container">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div>
+              <div class="metric-val">$14.8M+</div>
+              <div class="metric-label">Processed via Relay rails</div>
+            </div>
+            <span class="metric-chip">Stripe + PayPal</span>
+          </div>
+          <div class="metric-card">
+            <div>
+              <div class="metric-val">99.96%</div>
+              <div class="metric-label">Checkout routing uptime</div>
+            </div>
+            <span class="metric-chip">Failover Pool</span>
+          </div>
+          <div class="metric-card">
+            <div>
+              <div class="metric-val">&lt; 5 min</div>
+              <div class="metric-label">Vendor embed integration</div>
+            </div>
+            <span class="metric-chip">1 Script Tag</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         How the Stripe Plugin Works (Interactive Flow + Real Code Explorer)
+         ==================================================================== -->
+    <section id="plugin" class="section section--band">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">How the Stripe plugin works</span>
+          <h2 class="section-title">One drop-in script connects your vendor's site to your Stripe &amp; PayPal backend</h2>
+          <p class="section-lead">
+            Vendors never touch Stripe keys or PCI card fields. They embed <code>relay-plugin.js</code>, your Relay backend creates the real Stripe Checkout session, and verified webhooks handle order fulfillment and payout accounting automatically.
+          </p>
+        </div>
+
+        <div class="flow-strip">
+          <div class="flow-node">
+            <div class="flow-step">STEP 01</div>
+            <div class="flow-title">Vendor embeds script</div>
+            <p class="flow-desc">The vendor pastes <code>relay-plugin.js</code> and adds <code>data-relay-checkout</code> onto any Buy button.</p>
+          </div>
+          <div class="flow-node">
+            <div class="flow-step">STEP 02</div>
+            <div class="flow-title">Relay creates Stripe session</div>
+            <p class="flow-desc">Your Node server calls <code>stripe.checkout.sessions.create()</code> using your Stripe secret key and attaches vendor metadata.</p>
+          </div>
+          <div class="flow-node">
+            <div class="flow-step">STEP 03</div>
+            <div class="flow-title">Stripe verifies &amp; webhooks</div>
+            <p class="flow-desc">Customer completes 3DS2 card/Apple Pay checkout. Stripe posts a signed event to <code>/api/stripe/webhook</code>.</p>
+          </div>
+          <div class="flow-node">
+            <div class="flow-step">STEP 04</div>
+            <div class="flow-title">Commission &amp; vendor payout</div>
+            <p class="flow-desc">Relay deducts your commission, notifies the vendor's store to fulfill, and queues their net payout in Admin.</p>
+          </div>
+        </div>
+
+        <div class="code-explorer">
+          <div class="code-tabs-bar">
+            <div class="code-tabs" role="tablist">
+              <button type="button" class="code-tab is-active" data-code-tab="embed">1. Vendor Site HTML</button>
+              <button type="button" class="code-tab" data-code-tab="backend">2. Relay Stripe Backend</button>
+              <button type="button" class="code-tab" data-code-tab="webhook">3. Webhook &amp; Settlement</button>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn--secondary btn--sm" id="copy-code-btn">Copy snippet</button>
+              <button type="button" class="btn btn--primary btn--sm" data-relay-checkout data-vendor="vnd_acme01" data-item="Relay Plugin Live Demo" data-amount="79" data-rail="stripe">Launch Plugin Modal</button>
+            </div>
+          </div>
+
+          <div class="code-panel-body">
+            <pre class="code-block" id="code-display"></pre>
+            <div class="code-aside">
+              <div>
+                <h4 id="code-aside-title">Zero PCI burden on the vendor</h4>
+                <p id="code-aside-desc">
+                  Your vendor only drops two lines of HTML onto their storefront. Clicking the button automatically invokes <code>window.RelayCheckout.open()</code> and routes payment through your Stripe or PayPal gateway.
+                </p>
+              </div>
+              <button type="button" class="btn btn--secondary btn--full" data-open-apply>Generate a vendor embed key</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Asymmetric Bento Capabilities
+         ==================================================================== -->
+    <section id="features" class="section">
+      <div class="container">
+        <div class="section-head">
+          <span class="kicker">Platform capabilities</span>
+          <h2 class="section-title">Everything you need to run a payment middleman desk</h2>
+          <p class="section-lead">Built from the ground up for operators managing multiple vendor storefronts across Stripe and PayPal.</p>
+        </div>
+
+        <div class="bento-top">
+          <article class="bento-card bento-card--accent">
+            <div class="bento-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
+            </div>
+            <h3 class="bento-title">Unified Stripe, PayPal &amp; Express Wallets</h3>
+            <p class="bento-desc">
+              Toggle Stripe Credit/Debit Cards, Apple Pay, Google Pay, and PayPal Express globally or per vendor. Pause any rail instantly from the Admin Panel without touching vendor code.
+            </p>
+          </article>
+
+          <article class="bento-card bento-card--sky">
+            <div class="bento-icon" style="color: var(--sky);" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
+            </div>
+            <h3 class="bento-title">Full Admin Control Plane</h3>
+            <p class="bento-desc">
+              Approve vendors, adjust custom commission percentages, release payout batches, inspect live Stripe webhooks, and issue time-limited temporary staff logins from one dashboard.
+            </p>
+          </article>
+        </div>
+
+        <div class="bento-bottom">
+          <article class="bento-card">
+            <div class="bento-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+            </div>
+            <h3 class="bento-title">Signed Fulfillment Webhooks</h3>
+            <p class="bento-desc">HMAC-SHA256 webhooks notify vendor sites immediately on capture so keys, licenses, and digital orders fulfill with zero manual delay.</p>
+          </article>
+
+          <article class="bento-card">
+            <div class="bento-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V7l7-4z" /><path d="M9.5 12.2l1.8 1.8 3.6-3.8" /></svg>
+            </div>
+            <h3 class="bento-title">3DS2 &amp; Dispute Protection</h3>
+            <p class="bento-desc">Built-in 3D Secure verification, velocity filtering, and order audit trails reduce fraudulent chargebacks across Stripe and PayPal.</p>
+          </article>
+
+          <article class="bento-card">
+            <div class="bento-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+            </div>
+            <h3 class="bento-title">Automated Settlement Ledger</h3>
+            <p class="bento-desc">Every captured order automatically calculates your middleman margin and queues the vendor's net balance for USDT, BTC, or wire payout.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Pricing & Live Vendor Payout Calculator
+         ==================================================================== -->
+    <section id="pricing" class="section section--band">
+      <div class="container">
+        <div class="section-head section-head--center">
+          <span class="kicker">Commission structure</span>
+          <h2 class="section-title">Volume-based pricing, live-editable in Admin</h2>
+          <p class="section-lead">Zero setup or monthly subscription fees. Commission rates below sync directly with your Admin Site Controls.</p>
+        </div>
+
+        <div class="rail-switch-wrap">
+          <div class="segmented" role="tablist">
+            <button type="button" class="segmented-btn is-active" data-rail-tab="stripe">Stripe &amp; Cards</button>
+            <button type="button" class="segmented-btn" data-rail-tab="paypal">PayPal Checkout</button>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="price-card">
+            <div class="price-head"><h3 class="price-name">Starter</h3></div>
+            <div><span class="price-num" data-tier-rate="starter">8.0%</span><span class="price-unit">+ $0.30 / under $10k mo</span></div>
+            <p class="price-desc">Fast onboarding for new digital storefronts adding Stripe and PayPal.</p>
+            <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="5000">Apply for Starter</button>
+            <ul class="price-list">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Drop-in Stripe &amp; PayPal plugin</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>24h–48h USDT / BTC payouts</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>HMAC fulfillment webhooks</li>
+            </ul>
+          </article>
+
+          <article class="price-card price-card--featured">
+            <div class="price-head">
+              <h3 class="price-name">Growth</h3>
+              <span class="mode-badge">Most Popular</span>
+            </div>
+            <div><span class="price-num" data-tier-rate="growth">6.0%</span><span class="price-unit">+ $0.30 / $10k – $50k mo</span></div>
+            <p class="price-desc">Designed for scaling stores needing same-day settlements and API access.</p>
+            <button type="button" class="btn btn--primary btn--full" data-open-apply data-volume="25000">Apply for Growth</button>
+            <ul class="price-list">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Full REST API + embed plugin</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Same-day T+0 settlements</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Dedicated vendor portal login</li>
+            </ul>
+          </article>
+
+          <article class="price-card">
+            <div class="price-head"><h3 class="price-name">Enterprise</h3></div>
+            <div><span class="price-num" data-tier-rate="enterprise">4.5%</span><span class="price-unit">+ $0.30 / $50k+ monthly</span></div>
+            <p class="price-desc">Custom merchant pools, split payouts, and direct engineering support.</p>
+            <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="75000">Request Enterprise</button>
+            <ul class="price-list">
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Dedicated Stripe &amp; PayPal pool</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Instant rolling payouts</li>
+              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Custom rate override in Admin</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="calc-card" id="calculator">
+          <div>
+            <h3 style="font-size:1.125rem; font-weight:700; color:#fff; margin-bottom:4px;">Vendor Payout Estimator</h3>
+            <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:16px;">Preview your net payout across Stripe &amp; PayPal volume tiers.</p>
+            <div class="form-row-2">
+              <div>
+                <label class="field-label" for="calc-volume">Monthly Volume (USD)</label>
+                <input type="number" id="calc-volume" class="input" value="25000" min="500" max="500000" step="500" />
+              </div>
+              <div>
+                <label class="field-label" for="calc-rail">Payment Rail</label>
+                <select id="calc-rail" class="select">
+                  <option value="stripe">Stripe &amp; Cards</option>
+                  <option value="paypal">PayPal Express (+1.0%)</option>
+                </select>
+              </div>
+            </div>
+            <input type="range" id="calc-slider" class="slider" min="500" max="100000" step="500" value="25000" aria-label="Monthly volume slider" />
+          </div>
+
+          <div class="calc-summary">
+            <div class="calc-row"><span>Matched Tier</span><strong id="calc-tier">Growth · 6.0%</strong></div>
+            <div class="calc-row"><span>Gross Processed</span><strong id="calc-gross">$25,000.00</strong></div>
+            <div class="calc-row"><span>Relay Commission</span><strong id="calc-fee">$1,500.00</strong></div>
+            <div class="calc-row calc-row--net"><span>Net Vendor Payout</span><strong id="calc-net">$23,500.00</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         FAQ
+         ==================================================================== -->
+    <section id="faqs" class="section">
+      <div class="container container--narrow">
+        <div class="section-head section-head--center">
+          <span class="kicker">FAQ</span>
+          <h2 class="section-title">Common integration questions</h2>
+        </div>
+
+        <div class="faq-list" id="faq-list">
+          <div class="faq-item is-open">
+            <button type="button" class="faq-trigger" aria-expanded="true">
+              <span>How do I connect a live Stripe account to Relay?</span>
+              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="faq-panel"><div class="faq-panel-inner">Add your <code>STRIPE_PUBLISHABLE_KEY</code>, <code>STRIPE_SECRET_KEY</code>, and <code>STRIPE_WEBHOOK_SECRET</code> to the <code>.env</code> file and restart <code>node server.js</code>. Relay automatically switches from Sandbox Simulator to real Stripe Hosted Checkout sessions.</div></div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" aria-expanded="false">
+              <span>How do vendors embed Relay onto their website?</span>
+              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="faq-panel"><div class="faq-panel-inner">Once approved in the Admin Panel, each vendor receives an embed key and drops a single <code>&lt;script src="/relay-plugin.js"&gt;</code> tag onto their HTML, Shopify, WooCommerce, or custom React checkout page.</div></div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" aria-expanded="false">
+              <span>How do temporary Admin and partner logins work?</span>
+              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="faq-panel"><div class="faq-panel-inner">Relay ships with pre-seeded temporary logins for founders, co-founders/partners, and a demo vendor. Inside the Admin Panel under <strong>Temp Logins</strong>, you can mint new role-scoped temporary credentials with custom expiry windows or revoke them instantly.</div></div>
+          </div>
+          <div class="faq-item">
+            <button type="button" class="faq-trigger" aria-expanded="false">
+              <span>Can I pause Stripe or PayPal or change commission rates live?</span>
+              <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            <div class="faq-panel"><div class="faq-panel-inner">Yes. Every rail toggle and commission percentage inside Admin &rarr; Site Controls persists immediately to the backend and updates both the live pricing page and active checkout routing.</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Final CTA
+         ==================================================================== -->
+    <section class="section" style="padding-top: 0;">
+      <div class="container">
+        <div class="cta-box">
+          <h2 class="section-title">Ready to launch Relay on your storefront?</h2>
+          <p class="section-lead" style="max-width:520px; margin:0 auto 28px;">
+            Apply as a vendor in seconds, or sign in to the Admin Control Plane with a temporary login to test the full Stripe checkout and payout workflow.
+          </p>
+          <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+            <button type="button" class="btn btn--primary btn--lg" data-open-apply>Apply as vendor</button>
+            <button type="button" class="btn btn--secondary btn--lg" data-open-signin>Open Admin Panel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ======================================================================
+       Footer
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="#top" class="brand">
+            <span class="brand-mark" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 9h12l-3-3M19 15H7l3 3" /></svg>
+            </span>
+            <span>Relay</span>
+          </a>
+          <p style="font-size:0.875rem; color:var(--text-muted); margin-top:12px; max-width:300px;">
+            Managed Stripe and PayPal payment infrastructure for online vendors. Drop-in checkout plugin, webhooks, and admin settlement desk.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#plugin">Stripe Plugin</a></li>
+            <li><a href="#features">Capabilities</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#faqs">FAQ</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Access</h4>
+          <ul>
+            <li><button type="button" data-open-signin>Sign in</button></li>
+            <li><a href="/admin.html">Admin Panel</a></li>
+            <li><button type="button" data-open-apply>Apply as vendor</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>&copy; 2026 Relay. All rights reserved.</span>
+        <span>Built for real-time Stripe &amp; PayPal vendor orchestration.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================================
+       Modal 1: Sign In (with One-Click Temp Login Chips)
+       ====================================================================== -->
+  <div class="modal-backdrop" id="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signin-title" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="signin-title">Sign in to Relay</h3>
+          <p class="modal-sub">Access the Admin Control Plane or Vendor Portal.</p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
+      </div>
+
+      <form id="signin-form" class="form-stack">
+        <div>
+          <label class="field-label" for="login-email">Email</label>
+          <input type="email" id="login-email" class="input" placeholder="admin@relay.dev" required />
+        </div>
+        <div>
+          <label class="field-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="input" placeholder="••••••••••••" required />
+        </div>
+
+        <div>
+          <span class="field-label">Quick-fill temporary logins:</span>
+          <div class="temp-chips">
+            <button type="button" class="temp-chip" data-fill-login="admin@relay.dev" data-fill-pass="RelayAdmin!2026">Super Admin</button>
+            <button type="button" class="temp-chip" data-fill-login="partner@relay.dev" data-fill-pass="RelayPartner!2026">Partner Admin</button>
+            <button type="button" class="temp-chip" data-fill-login="vendor@acme.io" data-fill-pass="VendorDemo!2026">Vendor Demo</button>
+          </div>
+        </div>
+
+        <div id="signin-error" class="alert-err" hidden></div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Sign in &amp; open dashboard</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Modal 2: Vendor Application (Streams straight to Admin Panel)
+       ====================================================================== -->
+  <div class="modal-backdrop" id="apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-title" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="apply-title">Apply as a Vendor</h3>
+          <p class="modal-sub">Your application appears immediately inside the Relay Admin Panel for approval.</p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
+      </div>
+
+      <form id="apply-form" class="form-stack">
+        <div class="form-row-2">
+          <div>
+            <label class="field-label" for="app-name">Store Name</label>
+            <input type="text" id="app-name" class="input" placeholder="Acme Digital" required />
+          </div>
+          <div>
+            <label class="field-label" for="app-url">Website URL</label>
+            <input type="text" id="app-url" class="input" placeholder="https://yourstore.com" required />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="field-label" for="app-contact">Discord / Email</label>
+            <input type="text" id="app-contact" class="input" placeholder="@founder" required />
+          </div>
+          <div>
+            <label class="field-label" for="app-volume">Est. Monthly Volume ($)</label>
+            <input type="number" id="app-volume" class="input" value="25000" min="500" required />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="field-label" for="app-rails">Payment Rails</label>
+            <select id="app-rails" class="select">
+              <option value="stripe,paypal">Stripe + PayPal</option>
+              <option value="stripe">Stripe Only</option>
+              <option value="paypal">PayPal Only</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="app-payout">Settlement Method</label>
+            <select id="app-payout" class="select">
+              <option value="USDT (TRC-20)">USDT (TRC-20)</option>
+              <option value="BTC">BTC</option>
+              <option value="Bank Wire">Bank Wire</option>
+            </select>
+          </div>
+        </div>
+        <div id="apply-error" class="alert-err" hidden></div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Submit &amp; Generate Sandbox Embed</button>
+      </form>
+
+      <div id="apply-result" hidden>
+        <div style="color: var(--accent-text); font-weight: 700; margin-bottom: 6px;">Application Received &middot; Sandbox Key Ready</div>
+        <p style="font-size: 0.875rem; color: var(--text-muted);">
+          Your storefront is queued in <strong>Admin &rarr; Vendors</strong>. Paste this embed onto your checkout page to test immediately:
+        </p>
+        <pre class="snippet-pre" id="apply-snippet"></pre>
+        <div class="form-row-2">
+          <button type="button" class="btn btn--primary btn--full" id="copy-apply-snippet">Copy embed code</button>
+          <a href="/admin.html" class="btn btn--secondary btn--full">Review in Admin</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="relay-plugin.js" data-vendor="vnd_acme01"></script>
+  <script src="app.js"></script>
+</body>
+</html>

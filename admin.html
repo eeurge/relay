@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relay — Admin Control Plane</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2310b981'/%3E%3Cpath d='M9 11h10l-3-3m7 13H13l3 3' fill='none' stroke='%2304150e' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <!-- ======================================================================
+       Sign-In Gate (shown when not authenticated)
+       ====================================================================== -->
+  <div class="auth-gate" id="auth-gate">
+    <div class="auth-card">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+        <a href="/" class="brand">
+          <span class="brand-mark">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 9h12l-3-3M19 15H7l3 3" /></svg>
+          </span>
+          <span>Relay Admin</span>
+        </a>
+        <a href="/" style="font-size:0.8rem; color:var(--text-muted);">&larr; Back to site</a>
+      </div>
+
+      <h1 style="font-size:1.35rem; color:#fff; margin-bottom:6px;">Sign in to Control Plane</h1>
+      <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:20px;">
+        Use your temporary founder, partner, or vendor login below.
+      </p>
+
+      <form id="gate-login-form" style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <label class="label" for="gate-email">Email</label>
+          <input type="email" id="gate-email" class="input" placeholder="admin@relay.dev" required />
+        </div>
+        <div>
+          <label class="label" for="gate-password">Password</label>
+          <input type="password" id="gate-password" class="input" placeholder="••••••••••••" required />
+        </div>
+
+        <div>
+          <span class="label">Temporary logins (click to fill):</span>
+          <div class="temp-chips">
+            <button type="button" class="temp-chip" data-gate-fill="admin@relay.dev" data-gate-pass="RelayAdmin!2026">Super Admin</button>
+            <button type="button" class="temp-chip" data-gate-fill="partner@relay.dev" data-gate-pass="RelayPartner!2026">Partner Admin</button>
+            <button type="button" class="temp-chip" data-gate-fill="vendor@acme.io" data-gate-pass="VendorDemo!2026">Vendor Demo</button>
+          </div>
+        </div>
+
+        <div id="gate-error" style="color:#fca5a5; font-size:0.8125rem;" hidden></div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Admin Control Plane Shell
+       ====================================================================== -->
+  <div class="app-shell" id="app-shell" hidden>
+    <aside class="sidebar">
+      <div>
+        <div class="brand-row">
+          <a href="/" class="brand">
+            <span class="brand-mark">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 9h12l-3-3M19 15H7l3 3" /></svg>
+            </span>
+            <span>Relay</span>
+          </a>
+          <span class="badge badge--green" id="sidebar-stripe-mode">SANDBOX</span>
+        </div>
+
+        <div class="nav-group-label">Monitor</div>
+        <nav class="side-nav">
+          <button type="button" class="side-btn is-active" data-view="overview">
+            <span class="side-btn-left">Overview</span>
+          </button>
+          <button type="button" class="side-btn" data-view="orders">
+            <span class="side-btn-left">Transactions</span>
+            <span class="side-count" id="count-orders">0</span>
+          </button>
+          <button type="button" class="side-btn" data-view="vendors">
+            <span class="side-btn-left">Vendors</span>
+            <span class="side-count" id="count-vendors">0</span>
+          </button>
+          <button type="button" class="side-btn" data-view="payouts">
+            <span class="side-btn-left">Payout Queue</span>
+            <span class="side-count" id="count-payouts">0</span>
+          </button>
+        </nav>
+
+        <div class="nav-group-label">Control</div>
+        <nav class="side-nav">
+          <button type="button" class="side-btn" data-view="stripe">
+            <span class="side-btn-left">Stripe &amp; Rails</span>
+          </button>
+          <button type="button" class="side-btn" data-view="logins" id="nav-logins">
+            <span class="side-btn-left">Temp Logins</span>
+          </button>
+          <button type="button" class="side-btn" data-view="settings" id="nav-settings">
+            <span class="side-btn-left">Site Controls</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="user-box">
+          <div class="user-name" id="cur-user-name">Admin</div>
+          <div class="user-meta" id="cur-user-meta">admin@relay.dev</div>
+        </div>
+        <button type="button" class="btn btn--secondary btn--full" id="logout-btn">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="topbar-title" id="topbar-title">Overview</div>
+        <div class="topbar-right">
+          <button type="button" class="btn btn--primary" id="admin-test-checkout-btn">Run Stripe Plugin Test</button>
+          <a href="/" class="btn btn--secondary">Live Site &nearr;</a>
+        </div>
+      </header>
+
+      <main class="content">
+        <!-- VIEW 1: OVERVIEW -->
+        <section class="view is-active" id="view-overview">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-label">Gross Processed Volume</div>
+              <div class="kpi-value" id="kpi-gross">$0.00</div>
+              <div class="kpi-sub">Across Stripe, PayPal &amp; Wallets</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Relay Net Commission</div>
+              <div class="kpi-value" id="kpi-net">$0.00</div>
+              <div class="kpi-sub">Earned platform margin</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Pending Vendor Payouts</div>
+              <div class="kpi-value" id="kpi-pending">$0.00</div>
+              <div class="kpi-sub">Queued for USDT / BTC / Wire</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Active Vendors</div>
+              <div class="kpi-value" id="kpi-vendors">0</div>
+              <div class="kpi-sub" id="kpi-vendors-sub">0 pending review</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head">
+                <span class="panel-title">7-Day Processing Volume</span>
+                <span class="badge badge--green">Live Ledger</span>
+              </div>
+              <div class="panel-body">
+                <div class="chart-bars" id="volume-chart"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <span class="panel-title">Global Rail Switches</span>
+              </div>
+              <div class="panel-body" id="quick-rails-panel"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">Latest Transactions</span>
+              <button type="button" class="btn btn--secondary btn--xs" data-jump-view="orders">View all</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Order</th><th>Vendor</th><th>Rail</th><th>Gross</th><th>Relay Fee</th><th>Vendor Net</th><th>Status</th></tr>
+                </thead>
+                <tbody id="overview-orders-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 2: TRANSACTIONS -->
+        <section class="view" id="view-orders">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="panel-title">All Transactions &amp; Webhook Logs</span>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="orders-search" class="input" style="width:220px; height:32px;" placeholder="Filter order, vendor, email..." />
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Order ID</th><th>Vendor &amp; Item</th><th>Rail / Ref</th><th>Gross</th><th>Fee</th><th>Net</th><th>Webhook</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="orders-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 3: VENDORS -->
+        <section class="view" id="view-vendors">
+          <div class="panel" id="add-vendor-panel">
+            <div class="panel-head"><span class="panel-title">Add Approved Vendor</span></div>
+            <div class="panel-body">
+              <form id="add-vendor-form" class="form-grid-3">
+                <div><label class="label">Store Name</label><input class="input" id="nv-name" placeholder="Apex Keys" required /></div>
+                <div><label class="label">Website URL</label><input class="input" id="nv-url" placeholder="https://apexkeys.io" required /></div>
+                <div><label class="label">Commission %</label><input class="input" id="nv-rate" type="number" step="0.1" value="6.0" required /></div>
+                <div><label class="label">Contact</label><input class="input" id="nv-contact" placeholder="@apex" /></div>
+                <div><label class="label">Payout Destination</label><input class="input" id="nv-dest" placeholder="TRC-20 address or IBAN" /></div>
+                <div style="display:flex; align-items:flex-end;"><button type="submit" class="btn btn--primary btn--full">Create Vendor &amp; API Key</button></div>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Vendor Accounts &amp; Pending Applications</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Vendor</th><th>Status</th><th>Rate</th><th>Rails</th><th>API / Embed Key</th><th>Payout Method</th><th>Controls</th></tr>
+                </thead>
+                <tbody id="vendors-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 4: PAYOUTS -->
+        <section class="view" id="view-payouts">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Vendor Settlement Queue</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Payout ID</th><th>Vendor</th><th>Amount</th><th>Method &amp; Destination</th><th>Status / Tx Hash</th><th>Action</th></tr>
+                </thead>
+                <tbody id="payouts-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 5: STRIPE & RAILS -->
+        <section class="view" id="view-stripe">
+          <div class="grid-even">
+            <div class="panel">
+              <div class="panel-head">
+                <span class="panel-title">Stripe Connection Diagnostics</span>
+                <span class="badge badge--green" id="diag-mode-badge">SANDBOX</span>
+              </div>
+              <div class="panel-body" id="stripe-diag-body"></div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><span class="panel-title">Vendor Plugin Embed Snippet</span></div>
+              <div class="panel-body">
+                <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:12px;">
+                  Give any approved vendor these two lines to add Stripe &amp; PayPal onto their website:
+                </p>
+                <pre id="admin-embed-code" style="padding:14px; border-radius:10px; background:#06070a; border:1px solid var(--border); font-family:var(--font-mono); font-size:0.75rem; color:#e2e8f0; overflow-x:auto;"></pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 6: TEMP LOGINS -->
+        <section class="view" id="view-logins">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Generate Temporary Login</span></div>
+            <div class="panel-body">
+              <form id="create-temp-form" class="form-grid-3">
+                <div><label class="label">Label / Person Name</label><input class="input" id="tl-name" placeholder="My Co-Founder" required /></div>
+                <div><label class="label">Email</label><input class="input" id="tl-email" type="email" placeholder="friend@relay.dev" required /></div>
+                <div>
+                  <label class="label">Role</label>
+                  <select class="select" id="tl-role">
+                    <option value="admin">Admin (Full Control)</option>
+                    <option value="operator">Operator (Orders &amp; Payouts)</option>
+                    <option value="vendor">Vendor Portal</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">Expires In</label>
+                  <select class="select" id="tl-hours">
+                    <option value="24">24 Hours</option>
+                    <option value="168" selected>7 Days</option>
+                    <option value="720">30 Days</option>
+                  </select>
+                </div>
+                <div><label class="label">Note</label><input class="input" id="tl-note" placeholder="Collaborator access" /></div>
+                <div style="display:flex; align-items:flex-end;"><button type="submit" class="btn btn--primary btn--full">Mint Temp Login</button></div>
+              </form>
+              <div id="new-login-banner" style="margin-top:14px; padding:14px; border-radius:10px; background:var(--accent-soft); border:1px solid var(--accent-border);" hidden></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Active &amp; Revoked Temporary Logins</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>User</th><th>Role</th><th>Temp Password</th><th>Expires</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody id="logins-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW 7: SITE CONTROLS -->
+        <section class="view" id="view-settings">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Live Website &amp; Commission Controls</span></div>
+            <div class="panel-body">
+              <form id="settings-form" style="display:flex; flex-direction:column; gap:18px; max-width:720px;">
+                <div>
+                  <label class="label" for="set-status-text">Hero Live Status Pill Text</label>
+                  <input class="input" id="set-status-text" />
+                </div>
+                <div class="form-grid-3">
+                  <div><label class="label" for="set-starter">Starter Commission (%)</label><input class="input" id="set-starter" type="number" step="0.1" /></div>
+                  <div><label class="label" for="set-growth">Growth Commission (%)</label><input class="input" id="set-growth" type="number" step="0.1" /></div>
+                  <div><label class="label" for="set-enterprise">Enterprise Commission (%)</label><input class="input" id="set-enterprise" type="number" step="0.1" /></div>
+                </div>
+                <div class="form-grid-2">
+                  <div><label class="label" for="set-paypal-markup">PayPal Rail Markup (%)</label><input class="input" id="set-paypal-markup" type="number" step="0.1" /></div>
+                  <div><label class="label" for="set-fixed">Fixed Per-Order Fee ($)</label><input class="input" id="set-fixed" type="number" step="0.05" /></div>
+                </div>
+                <div class="switch-row" style="border:1px solid var(--border); border-radius:12px; padding:14px;">
+                  <div>
+                    <div class="switch-title">Accepting New Vendor Applications</div>
+                    <div class="switch-desc">Turn off to pause public applications on the landing page.</div>
+                  </div>
+                  <button type="button" class="switch-btn is-on" id="set-accepting-toggle"></button>
+                </div>
+                <div>
+                  <button type="submit" class="btn btn--primary btn--lg">Save &amp; Push Live to Website</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="relay-plugin.js" data-vendor="vnd_acme01"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
