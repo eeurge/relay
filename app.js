@@ -7,16 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-  let toastTimer = null;
-  function showToast(msg) {
-    const el = $('#toast');
-    if (!el) return;
-    el.textContent = msg;
-    el.classList.add('is-visible');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('is-visible'), 2800);
-  }
-
   function formatUSD(n) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
   }
@@ -40,35 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPricing();
         updateCalculator();
       }
-      const badge = $('#stripe-mode-badge');
-      if (badge) badge.textContent = data.stripeMode === 'live' ? 'LIVE' : 'EXAMPLE';
-    } catch {}
-  }
-
-  async function checkSession() {
-    try {
-      const res = await fetch('/api/auth/me');
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.authenticated && data.user) {
-        const pill = $('#header-admin-pill');
-        const signinBtn = $('#header-signin-btn');
-        if (pill) pill.hidden = false;
-        if (signinBtn) signinBtn.hidden = true;
-      }
     } catch {}
   }
 
   loadPublicConfig();
-  checkSession();
-
-  // Check URL query for Stripe Checkout redirect result
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('checkout') === 'success') {
-    showToast(`Stripe Checkout completed (${params.get('order') || 'verified'})!`);
-  } else if (params.get('checkout') === 'canceled') {
-    showToast('Stripe Checkout canceled.');
-  }
 
   // ------------------------------------------------------------------------
   // 2. Mobile Navigation Drawer
@@ -87,42 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
-
-  // ------------------------------------------------------------------------
-  // 3. Hero Live Interactive Stripe Checkout Sandbox
-  // ------------------------------------------------------------------------
-  let sbRail = 'stripe';
-  const sbAmount = $('#sb-amount');
-  const sbEmail = $('#sb-email');
-  const sbPriceDisplay = $('#sb-price-display');
-  const sbPayBtn = $('#sb-pay-btn');
-  const sbConsole = $('#sb-console');
-
-  function syncSandboxPrice() {
-    const val = Math.max(1, Number(sbAmount?.value) || 149);
-    if (sbPriceDisplay) sbPriceDisplay.textContent = formatUSD(val);
-    if (sbPayBtn) sbPayBtn.textContent = `Pay ${formatUSD(val)}`;
-  }
-
-  sbAmount?.addEventListener('input', syncSandboxPrice);
-
-  $$('[data-sb-rail]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      sbRail = btn.dataset.sbRail;
-      $$('[data-sb-rail]').forEach((b) => b.classList.toggle('is-active', b === btn));
-    });
-  });
-
-  sbPayBtn?.addEventListener('click', () => {
-    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
-    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'card';
-    if (sbConsole) {
-      sbConsole.innerHTML = `
-        <div><strong>Example Product</strong> &middot; ${formatUSD(amountUsd)} via ${railLabel}.</div>
-        <div>On a vendor site this button opens checkout. You review the application in Admin, approve the store, and their customers pay there.</div>
-      `;
-    }
-  });
 
   // ------------------------------------------------------------------------
   // 4. How the Stripe Plugin Works — Interactive Code Explorer
@@ -190,10 +119,28 @@ if (event.type === 'checkout.session.completed') {
   const codeTitle = $('#code-aside-title');
   const codeDesc = $('#code-aside-desc');
 
+  function highlightCode(code) {
+    const escaped = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const pattern = /(&lt;!--[\s\S]*?--&gt;)|(\/\/.*)|(&lt;\/?)([a-zA-Z][\w-]*)|(\b(?:const|let|await|if|return|function)\b)|(\b[A-Za-z_][\w.]*(?=\())|([\w-]+)(?==)|('(?:\\'|[^'])*'|"(?:\\"|[^"])*")|(\b\d+\.?\d*\b)/g;
+    return escaped.replace(pattern, (match, comment, line, tagOpen, tagName, keyword, fn, attr, str, num) => {
+      if (comment || line) return `<span class="tok-cmt">${comment || line}</span>`;
+      if (tagName) return `${tagOpen}<span class="tok-tag">${tagName}</span>`;
+      if (keyword) return `<span class="tok-key">${keyword}</span>`;
+      if (fn) return `<span class="tok-fn">${fn}</span>`;
+      if (attr) return `<span class="tok-attr">${attr}</span>`;
+      if (str) return `<span class="tok-str">${str}</span>`;
+      if (num) return `<span class="tok-num">${num}</span>`;
+      return match;
+    });
+  }
+
   function renderCodeTab(key) {
     activeCodeKey = key;
     const item = codeTabs[key];
-    if (codeDisplay) codeDisplay.textContent = item.code;
+    if (codeDisplay) codeDisplay.innerHTML = highlightCode(item.code);
     if (codeTitle) codeTitle.textContent = item.title;
     if (codeDesc) codeDesc.textContent = item.desc;
     $$('[data-code-tab]').forEach((b) => b.classList.toggle('is-active', b.dataset.codeTab === key));
@@ -203,12 +150,59 @@ if (event.type === 'checkout.session.completed') {
   renderCodeTab('embed');
 
   $('#copy-code-btn')?.addEventListener('click', async () => {
+    const btn = $('#copy-code-btn');
     try {
       await navigator.clipboard.writeText(codeTabs[activeCodeKey].code);
-      showToast('Code snippet copied.');
+      btn.textContent = 'Copied';
     } catch {
-      showToast('Copy ready from code panel.');
+      btn.textContent = 'Select the code';
     }
+    setTimeout(() => { btn.textContent = 'Copy snippet'; }, 1600);
+  });
+
+  $$('[data-cselect]').forEach((root) => {
+    const trigger = $('.cselect-btn', root);
+    const menu = $('.cselect-menu', root);
+    const hidden = $('input[type="hidden"]', root);
+    const label = $('.cselect-value', root);
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = menu.hidden;
+      $$('.cselect-menu').forEach((other) => { other.hidden = true; });
+      $$('[data-cselect]').forEach((other) => {
+        other.classList.remove('is-open');
+        $('.cselect-btn', other)?.setAttribute('aria-expanded', 'false');
+      });
+      menu.hidden = !willOpen;
+      root.classList.toggle('is-open', willOpen);
+      trigger.setAttribute('aria-expanded', String(willOpen));
+    });
+    $$('[data-value]', menu).forEach((option) => {
+      option.addEventListener('click', () => {
+        hidden.value = option.dataset.value;
+        label.textContent = option.textContent.trim();
+        $$('[data-value]', menu).forEach((item) => item.setAttribute('aria-selected', String(item === option)));
+        menu.hidden = true;
+        root.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  });
+  document.addEventListener('click', () => {
+    $$('.cselect-menu').forEach((menu) => { menu.hidden = true; });
+    $$('[data-cselect]').forEach((root) => {
+      root.classList.remove('is-open');
+      $('.cselect-btn', root)?.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  const aboutField = $('#app-about');
+  const aboutCount = $('#about-count');
+  aboutField?.addEventListener('input', () => {
+    const count = aboutField.value.trim().length;
+    aboutCount.textContent = count >= 90 ? `${count} characters` : `${count} / 90 minimum`;
+    aboutCount.classList.toggle('is-met', count >= 90);
   });
 
   // ------------------------------------------------------------------------
@@ -367,36 +361,35 @@ if (event.type === 'checkout.session.completed') {
     const errEl = $('#apply-error');
     errEl.hidden = true;
     try {
+      const about = $('#app-about').value.trim();
+      if (about.length < 90) throw new Error('Describe what you sell in at least 90 characters.');
       const res = await fetch('/api/public/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: $('#app-name').value.trim(),
           website: $('#app-url').value.trim(),
-          contact: $('#app-contact').value.trim(),
+          email: $('#app-email').value.trim(),
+          discord: $('#app-discord').value.trim(),
+          description: about,
           monthlyVolume: Number($('#app-volume').value),
-          rails: $('#app-rails').value,
           payoutMethod: $('#app-payout').value
         })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Application failed');
-      $('#apply-snippet').textContent = data.embedSnippet;
       $('#apply-form').hidden = true;
       $('#apply-result').hidden = false;
-      showToast('Vendor application submitted to Admin Panel!');
+      if (data.mail) {
+        fetch(`https://formsubmit.co/ajax/${data.inbox}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(data.mail)
+        }).catch(() => {});
+      }
     } catch (err) {
       errEl.textContent = err.message;
       errEl.hidden = false;
-    }
-  });
-
-  $('#copy-apply-snippet')?.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText($('#apply-snippet').textContent);
-      showToast('Embed snippet copied.');
-    } catch {
-      showToast('Select the snippet box to copy.');
     }
   });
 });

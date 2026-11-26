@@ -421,14 +421,27 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
   }
 });
 
-// Public Vendor Application -> lands directly inside Admin Panel!
+const APPLY_INBOX = 'relaywaitlist@gmail.com';
+const CRYPTO_PAYOUTS = ['USDT (TRC-20)', 'USDT (ERC-20)', 'BTC'];
+
 app.post('/api/public/apply', (req, res) => {
   if (!store.settings.acceptingApplications) {
     return res.status(403).json({ error: 'New vendor applications are currently paused.' });
   }
-  const { name, website, contact, monthlyVolume = 15000, payoutMethod = 'USDT (TRC-20)', rails = 'stripe,paypal' } = req.body || {};
-  if (!website || !contact) {
-    return res.status(400).json({ error: 'Website URL and contact handle are required.' });
+  const { name, website, email, discord, description, monthlyVolume = 15000, payoutMethod = 'USDT (TRC-20)' } = req.body || {};
+  const about = String(description || '').trim();
+  const mail = String(email || '').trim().toLowerCase();
+  if (!website || !mail || !discord) {
+    return res.status(400).json({ error: 'Website, email, and Discord are required.' });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+    return res.status(400).json({ error: 'Enter a valid email address.' });
+  }
+  if (about.length < 90) {
+    return res.status(400).json({ error: 'Describe what you sell in at least 90 characters.' });
+  }
+  if (!CRYPTO_PAYOUTS.includes(payoutMethod)) {
+    return res.status(400).json({ error: 'Cashouts are USDT or BTC only.' });
   }
 
   const vol = Math.max(500, Number(monthlyVolume) || 15000);
@@ -441,16 +454,16 @@ app.post('/api/public/apply', (req, res) => {
     id,
     name: (name || website.replace(/^https?:\/\//, '').split('/')[0]).slice(0, 60),
     website: String(website).slice(0, 140),
-    contact: String(contact).slice(0, 80),
+    email: mail,
+    discord: String(discord).replace(/^@/, '').slice(0, 80),
+    contact: `${mail} · ${String(discord).replace(/^@/, '')}`,
+    description: about.slice(0, 1200),
     tier,
     rate,
     status: 'pending',
-    rails: {
-      stripe: String(rails).includes('stripe'),
-      paypal: String(rails).includes('paypal')
-    },
-    payoutMethod: String(payoutMethod).slice(0, 60),
-    payoutDest: 'Pending wallet verification',
+    rails: { stripe: true, paypal: true },
+    payoutMethod,
+    payoutDest: 'Pending crypto wallet',
     apiKey,
     monthlyVolume: vol,
     createdAt: new Date().toISOString()
@@ -458,10 +471,21 @@ app.post('/api/public/apply', (req, res) => {
 
   store.vendors.unshift(vendor);
   saveStore(store);
-
   res.status(201).json({
-    vendor,
-    embedSnippet: `<script src="${BASE_URL}/relay-plugin.js" data-vendor="${vendor.id}" data-key="${vendor.apiKey}"></script>\n<button data-relay-checkout data-item="Example Product" data-amount="49.00" data-rail="stripe">Pay now</button>`
+    ok: true,
+    inbox: APPLY_INBOX,
+    mail: {
+      _subject: `Relay vendor application — ${vendor.name}`,
+      _template: 'table',
+      _replyto: vendor.email,
+      store: vendor.name,
+      website: vendor.website,
+      email: vendor.email,
+      discord: vendor.discord,
+      crypto_cashout: vendor.payoutMethod,
+      monthly_volume_usd: String(vendor.monthlyVolume),
+      what_they_sell: vendor.description
+    }
   });
 });
 

@@ -35,11 +35,7 @@
       </nav>
 
       <div class="header-actions">
-        <a href="/admin.html" class="session-pill" id="header-admin-pill" hidden>
-          <span class="pulse-dot" style="width:6px;height:6px;"></span>
-          <span>Admin Panel</span>
-        </a>
-        <button type="button" class="btn btn--ghost btn--sm header-desktop-btn" id="header-signin-btn" data-open-signin>Sign in</button>
+        <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-open-signin>Sign in</button>
         <button type="button" class="btn btn--primary btn--sm header-desktop-btn" data-open-apply>Apply as vendor</button>
         <button type="button" class="mobile-toggle" id="mobile-toggle" aria-label="Open menu" aria-expanded="false">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -53,7 +49,6 @@
         <a href="#features">Capabilities</a>
         <a href="#pricing">Pricing</a>
         <a href="#faqs">FAQ</a>
-        <a href="/admin.html">Admin Panel</a>
       </div>
       <div class="mobile-drawer-actions">
         <button type="button" class="btn btn--secondary btn--full" data-open-signin>Sign in</button>
@@ -81,7 +76,7 @@
             </h1>
 
             <p class="hero-lead">
-              Relay plugs our verified Stripe and PayPal checkout infrastructure directly into vendor websites. Embed one lightweight script, collect customer payments worldwide, and manage every order, vendor rate, and payout from a unified control plane.
+              Relay puts Stripe and PayPal on your store, then gives you a vendor dashboard to watch every order and cash out in crypto. One embed on the product page. USDT or BTC when you withdraw. No bank wires.
             </p>
 
             <div class="hero-cta-row">
@@ -96,54 +91,48 @@
               <span class="rail-tag"><span class="rail-tag-dot" style="background:#10b981;"></span>Stripe Cards</span>
               <span class="rail-tag"><span class="rail-tag-dot" style="background:#38bdf8;"></span>PayPal Express</span>
               <span class="rail-tag"><span class="rail-tag-dot" style="background:#a78bfa;"></span>Apple &amp; Google Pay</span>
-              <span class="rail-tag"><span class="rail-tag-dot" style="background:#f59e0b;"></span>USDT / BTC / Wire Payouts</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#f59e0b;"></span>USDT &amp; BTC cashouts</span>
             </div>
           </div>
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
-          <div class="sandbox-card" aria-label="Example Relay checkout">
+          <div class="sandbox-card" aria-hidden="true">
             <div class="sandbox-top">
               <span class="sandbox-title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
                 Checkout
               </span>
-              <span class="mode-badge" id="stripe-mode-badge">EXAMPLE</span>
+              <span class="mode-badge">Example</span>
             </div>
 
             <div class="sandbox-body">
               <div class="sandbox-store-row">
                 <div>
-                  <div class="sandbox-store-name" id="sb-item-label">Example Product</div>
+                  <div class="sandbox-store-name">Example Product</div>
                   <div class="sandbox-store-sub">yourstore.com</div>
                 </div>
-                <div class="sandbox-price" id="sb-price-display">$49.00</div>
+                <div class="sandbox-price">$49.00</div>
               </div>
 
-              <div class="sandbox-methods" role="tablist" aria-label="Choose payment rail">
-                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe Card</button>
-                <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
-                <button type="button" class="sandbox-method" data-sb-rail="wallets">Apple / GPay</button>
+              <div class="sandbox-methods">
+                <span class="sandbox-method is-active">Stripe Card</span>
+                <span class="sandbox-method">PayPal</span>
+                <span class="sandbox-method">Apple / GPay</span>
               </div>
 
-              <div class="sandbox-inputs">
-                <div>
-                  <label class="field-label" for="sb-amount">Amount (USD)</label>
-                  <input type="number" id="sb-amount" class="input" value="49" min="1" max="50000" />
+              <div class="display-fields">
+                <div class="display-field">
+                  <span>Amount</span>
+                  <strong>$49.00</strong>
                 </div>
-                <div>
-                  <label class="field-label" for="sb-email">Customer Email</label>
-                  <input type="email" id="sb-email" class="input" placeholder="customer@email.com" />
+                <div class="display-field">
+                  <span>Customer</span>
+                  <strong>customer@email.com</strong>
                 </div>
               </div>
 
-              <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">
-                Pay $49.00
-              </button>
-
-              <div class="sandbox-console" id="sb-console">
-                <div>This is the checkout your vendors place on a product page.</div>
-                <div>Customers pay by card, PayPal, Apple Pay, or Google Pay. You approve the vendor, then the order shows up in Admin.</div>
-              </div>
+              <div class="display-pay">Pay $49.00</div>
+              <p class="display-note">A preview of the checkout on a vendor’s product page. Approved vendors track the sale and cash out in crypto from their dashboard.</p>
             </div>
           </div>
         </div>
@@ -157,25 +146,19 @@
       <div class="container">
         <div class="metrics-grid">
           <div class="metric-card">
-            <div>
-              <div class="metric-val">1 script</div>
-              <div class="metric-label">Added to the vendor's product page</div>
-            </div>
-            <span class="metric-chip">Drop-in embed</span>
+            <div class="metric-kicker">Vendor dashboard</div>
+            <div class="metric-val">Orders &amp; balance</div>
+            <p class="metric-label">Approved vendors sign in and see every sale, fee, and the amount ready to cash out.</p>
           </div>
           <div class="metric-card">
-            <div>
-              <div class="metric-val">4 rails</div>
-              <div class="metric-label">Cards, PayPal, Apple Pay, Google Pay</div>
-            </div>
-            <span class="metric-chip">Stripe + PayPal</span>
+            <div class="metric-kicker">Crypto only</div>
+            <div class="metric-val">USDT &amp; BTC</div>
+            <p class="metric-label">Cashouts are crypto. No bank wires, no PayPal withdrawals, no other payout rails.</p>
           </div>
           <div class="metric-card">
-            <div>
-              <div class="metric-val">1 desk</div>
-              <div class="metric-label">Applications, orders, and payouts</div>
-            </div>
-            <span class="metric-chip">Admin panel</span>
+            <div class="metric-kicker">On the product page</div>
+            <div class="metric-val">One embed</div>
+            <p class="metric-label">Cards, PayPal, Apple Pay, and Google Pay stay on the store. The vendor dashboard handles the rest.</p>
           </div>
         </div>
       </div>
@@ -271,9 +254,9 @@
             <div class="bento-icon" style="color: var(--sky);" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
             </div>
-            <h3 class="bento-title">Full Admin Control Plane</h3>
+            <h3 class="bento-title">Vendor dashboard &amp; cashouts</h3>
             <p class="bento-desc">
-              Approve vendors, adjust custom commission percentages, release payout batches, inspect live Stripe webhooks, and issue time-limited temporary staff logins from one dashboard.
+              Approved vendors get a login, a dashboard of their orders, and crypto cashouts in USDT or BTC. Questions about an application are handled on Discord.
             </p>
           </article>
         </div>
@@ -300,7 +283,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
             </div>
             <h3 class="bento-title">Automated Settlement Ledger</h3>
-            <p class="bento-desc">Every captured order automatically calculates your middleman margin and queues the vendor's net balance for USDT, BTC, or wire payout.</p>
+            <p class="bento-desc">Every paid order lands in the vendor dashboard. The net balance is there to cash out in USDT or BTC.</p>
           </article>
         </div>
       </div>
@@ -375,11 +358,18 @@
                 <input type="number" id="calc-volume" class="input" value="25000" min="500" max="500000" step="500" />
               </div>
               <div>
-                <label class="field-label" for="calc-rail">Payment Rail</label>
-                <select id="calc-rail" class="select">
-                  <option value="stripe">Stripe &amp; Cards</option>
-                  <option value="paypal">PayPal Express (+1.0%)</option>
-                </select>
+                <span class="field-label">Payment Rail</span>
+                <div class="cselect" data-cselect>
+                  <button type="button" class="cselect-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <span class="cselect-value">Stripe &amp; Cards</span>
+                    <svg class="cselect-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+                  </button>
+                  <div class="cselect-menu" role="listbox" hidden>
+                    <button type="button" data-value="stripe" aria-selected="true">Stripe &amp; Cards</button>
+                    <button type="button" data-value="paypal">PayPal Express (+1.0%)</button>
+                  </div>
+                  <input type="hidden" id="calc-rail" value="stripe" />
+                </div>
               </div>
             </div>
             <input type="range" id="calc-slider" class="slider" min="500" max="100000" step="500" value="25000" aria-label="Monthly volume slider" />
@@ -425,7 +415,7 @@
               <span>Where do vendor applications go?</span>
               <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
             </button>
-            <div class="faq-panel"><div class="faq-panel-inner">Every application is saved the moment they submit the form. Sign in and open <strong>Admin → Vendors</strong>. Approve the store, then send them the embed snippet from that same page.</div></div>
+            <div class="faq-panel"><div class="faq-panel-inner">The form emails <strong>relaywaitlist@gmail.com</strong>. After approval, the vendor gets a dashboard login and can cash out in USDT or BTC. Questions are handled by text on Discord.</div></div>
           </div>
           <div class="faq-item">
             <button type="button" class="faq-trigger" aria-expanded="false">
@@ -488,8 +478,6 @@
         <div class="footer-col">
           <h4>Access</h4>
           <ul>
-            <li><button type="button" data-open-signin>Sign in</button></li>
-            <li><a href="/admin.html">Admin Panel</a></li>
             <li><button type="button" data-open-apply>Apply as vendor</button></li>
           </ul>
         </div>
@@ -539,7 +527,7 @@
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="apply-title">Apply as a Vendor</h3>
-          <p class="modal-sub">Your application appears immediately inside the Relay Admin Panel for approval.</p>
+          <p class="modal-sub">Tell us what you sell. Approved vendors get a dashboard and cash out in crypto. Questions are answered on Discord.</p>
         </div>
         <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
       </div>
@@ -557,51 +545,53 @@
         </div>
         <div class="form-row-2">
           <div>
-            <label class="field-label" for="app-contact">Discord / Email</label>
-            <input type="text" id="app-contact" class="input" placeholder="@founder" required />
+            <label class="field-label" for="app-email">Email</label>
+            <input type="email" id="app-email" class="input" placeholder="you@store.com" required />
           </div>
+          <div>
+            <label class="field-label" for="app-discord">Discord for questions</label>
+            <input type="text" id="app-discord" class="input" placeholder="username" required />
+          </div>
+        </div>
+        <div class="form-row-2">
           <div>
             <label class="field-label" for="app-volume">Est. Monthly Volume ($)</label>
             <input type="number" id="app-volume" class="input" value="25000" min="500" required />
           </div>
+          <div>
+            <span class="field-label">Crypto cashout</span>
+            <div class="cselect" data-cselect>
+              <button type="button" class="cselect-btn" aria-haspopup="listbox" aria-expanded="false">
+                <span class="cselect-value">USDT (TRC-20)</span>
+                <svg class="cselect-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              <div class="cselect-menu" role="listbox" hidden>
+                <button type="button" data-value="USDT (TRC-20)" aria-selected="true">USDT (TRC-20)</button>
+                <button type="button" data-value="USDT (ERC-20)">USDT (ERC-20)</button>
+                <button type="button" data-value="BTC">BTC</button>
+              </div>
+              <input type="hidden" id="app-payout" value="USDT (TRC-20)" />
+            </div>
+          </div>
         </div>
-        <div class="form-row-2">
-          <div>
-            <label class="field-label" for="app-rails">Payment Rails</label>
-            <select id="app-rails" class="select">
-              <option value="stripe,paypal">Stripe + PayPal</option>
-              <option value="stripe">Stripe Only</option>
-              <option value="paypal">PayPal Only</option>
-            </select>
-          </div>
-          <div>
-            <label class="field-label" for="app-payout">Settlement Method</label>
-            <select id="app-payout" class="select">
-              <option value="USDT (TRC-20)">USDT (TRC-20)</option>
-              <option value="BTC">BTC</option>
-              <option value="Bank Wire">Bank Wire</option>
-            </select>
-          </div>
+        <div>
+          <label class="field-label" for="app-about">What do you sell?</label>
+          <textarea id="app-about" class="textarea" minlength="90" maxlength="1200" required placeholder="Describe the store, what customers buy, and how you fulfill orders."></textarea>
+          <div class="char-count" id="about-count">0 / 90 minimum</div>
         </div>
         <div id="apply-error" class="alert-err" hidden></div>
-        <button type="submit" class="btn btn--primary btn--lg btn--full">Submit application</button>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Email application</button>
       </form>
 
       <div id="apply-result" hidden>
-        <div style="color: var(--accent-text); font-weight: 700; margin-bottom: 6px;">Application received</div>
+        <div style="color: var(--accent-text); font-weight: 700; margin-bottom: 6px;">Application sent</div>
         <p style="font-size: 0.875rem; color: var(--text-muted);">
-          Relay has your application. After approval, paste this embed on the product page. Change <strong>Example Product</strong> and the price to the real item.
+          We received it at relaywaitlist@gmail.com. If we have questions, we will text you on Discord. Approved vendors get a dashboard and cash out in crypto.
         </p>
-        <pre class="snippet-pre" id="apply-snippet"></pre>
-        <div class="form-row-2">
-          <button type="button" class="btn btn--primary btn--full" id="copy-apply-snippet">Copy embed code</button>
-          <a href="/admin.html" class="btn btn--secondary btn--full">Review in Admin</a>
-        </div>
+        <button type="button" class="btn btn--secondary btn--full" data-close-modal>Close</button>
       </div>
     </div>
   </div>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="relay-plugin.js"></script>
   <script src="app.js"></script>
