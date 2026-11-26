@@ -520,6 +520,11 @@ if (event.type === 'checkout.session.completed') {
     e.preventDefault();
     const errEl = $('#signup-error');
     errEl.hidden = true;
+    if ($('#signup-password').value !== $('#signup-confirm').value) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.hidden = false;
+      return;
+    }
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -527,7 +532,8 @@ if (event.type === 'checkout.session.completed') {
         body: JSON.stringify({
           name: $('#signup-name').value.trim(),
           email: $('#signup-email').value.trim(),
-          password: $('#signup-password').value
+          password: $('#signup-password').value,
+          confirmPassword: $('#signup-confirm').value
         })
       });
       const data = await res.json();

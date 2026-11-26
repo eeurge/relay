@@ -184,8 +184,29 @@ function saveStore(data) {
 
 let store = loadStore();
 
-// In-memory active sessions map: token -> { userId, expiresAt }
+// Active sessions: token -> { userId, expiresAt }. Saved with the store so a restart keeps people signed in.
 const sessions = new Map();
+
+function loadSessions() {
+  sessions.clear();
+  const now = Date.now();
+  const saved = store.sessions && typeof store.sessions === 'object' ? store.sessions : {};
+  for (const [token, sess] of Object.entries(saved)) {
+    if (sess && Number(sess.expiresAt) > now && sess.userId) sessions.set(token, sess);
+  }
+}
+
+function persistSessions() {
+  const now = Date.now();
+  const saved = {};
+  for (const [token, sess] of sessions) {
+    if (Number(sess.expiresAt) > now) saved[token] = sess;
+  }
+  store.sessions = saved;
+  saveStore(store);
+}
+
+loadSessions();
 
 function parseCookies(req) {
   const header = req.headers.cookie || '';
@@ -616,6 +637,7 @@ function startSession(res, user) {
   const token = crypto.randomBytes(24).toString('hex');
   const ttlMs = 24 * 3600 * 1000;
   sessions.set(token, { userId: user.id, expiresAt: Date.now() + ttlMs });
+  persistSessions();
   res.setHeader(
     'Set-Cookie',
     `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400${BASE_URL.startsWith('https://') ? '; Secure' : ''}`
@@ -624,7 +646,7 @@ function startSession(res, user) {
 }
 
 app.post('/api/auth/signup', (req, res) => {
-  const { name = '', email = '', password = '' } = req.body || {};
+  const { name = '', email = '', password = '', confirmPassword = '' } = req.body || {};
   const cleanName = String(name).trim().slice(0, 80);
   const normalizedEmail = String(email).trim().toLowerCase();
   const cleanPassword = String(password);
@@ -633,6 +655,9 @@ app.post('/api/auth/signup', (req, res) => {
     return res.status(400).json({ error: 'Enter a valid email.' });
   }
   if (cleanPassword.length < 8) return res.status(400).json({ error: 'Use at least 8 characters.' });
+  if (cleanPassword !== String(confirmPassword)) {
+    return res.status(400).json({ error: 'Passwords do not match.' });
+  }
   if (store.users.some((user) => user.email === normalizedEmail)) {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
@@ -730,6 +755,7 @@ app.post('/api/auth/account', (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   const cookies = parseCookies(req);
   if (cookies.relay_session) sessions.delete(cookies.relay_session);
+  persistSessions();
   res.setHeader('Set-Cookie', 'relay_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0');
   res.json({ ok: true });
 });
