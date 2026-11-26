@@ -120,7 +120,7 @@
       item: options.item || 'Digital License',
       amountUsd: Number(options.amountUsd) || 49,
       rail: options.rail || 'stripe',
-      customerEmail: options.customerEmail || 'buyer@example.com',
+      customerEmail: options.customerEmail || '',
       apiBase: options.apiBase || defaultOrigin,
       onSuccess: typeof options.onSuccess === 'function' ? options.onSuccess : null
     };

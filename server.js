@@ -258,6 +258,15 @@ app.set('trust proxy', 1);
 // ---------------------------------------------------------------------------
 // Stripe Webhook Endpoint (MUST receive raw body before express.json)
 // ---------------------------------------------------------------------------
+function applyPaidSession(order, session, webhookStatus) {
+  order.status = 'paid';
+  order.stripeSessionId = order.stripeSessionId || session.id;
+  order.stripeRef = session.payment_intent || session.id;
+  order.webhookStatus = webhookStatus;
+  const email = session.customer_details?.email || session.customer_email;
+  if (email) order.customerEmail = email;
+}
+
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req, res) => {
   if (!stripe || !STRIPE_WEBHOOK_SECRET || STRIPE_WEBHOOK_SECRET.includes('replace_me')) {
     return res.status(200).json({ received: true, mode: 'sandbox_unverified' });
@@ -276,9 +285,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
     const orderId = session.metadata?.orderId;
     const existing = store.orders.find((o) => o.id === orderId);
     if (existing) {
-      existing.status = 'paid';
-      existing.stripeRef = session.payment_intent || session.id;
-      existing.webhookStatus = '200 OK';
+      applyPaidSession(existing, session, '200 OK');
       saveStore(store);
     }
   } else if (event.type === 'charge.dispute.created') {
@@ -332,6 +339,23 @@ app.get('/api/stripe/status', (req, res) => {
   });
 });
 
+app.get('/api/stripe/confirm', async (req, res) => {
+  const order = store.orders.find((item) => item.id === req.query.order);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  const sessionId = order.stripeSessionId || (String(order.stripeRef || '').startsWith('cs_') ? order.stripeRef : '');
+  if (!stripe || !sessionId) return res.json({ order });
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status === 'paid' || session.status === 'complete') {
+      applyPaidSession(order, session, order.webhookStatus === '200 OK' ? '200 OK' : 'Paid on return');
+      saveStore(store);
+    }
+    return res.json({ order, paymentStatus: session.payment_status });
+  } catch (err) {
+    return res.status(502).json({ error: err.message, order });
+  }
+});
+
 app.post('/api/stripe/create-checkout-session', async (req, res) => {
   try {
     const {
@@ -339,7 +363,7 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
       item = 'Digital Product',
       amountUsd = 49,
       rail = 'stripe',
-      customerEmail = 'customer@example.com'
+      customerEmail = ''
     } = req.body || {};
 
     const gross = Math.max(1, Math.min(250000, Number(amountUsd) || 49));
@@ -357,7 +381,6 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
     if (stripe && (safeRail === 'stripe' || safeRail === 'wallets')) {
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
-        customer_email: customerEmail || undefined,
         line_items: [
           {
             quantity: 1,
@@ -394,6 +417,7 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
         status: 'pending_payment',
         webhookStatus: 'Waiting on Stripe',
         stripeRef: session.id,
+        stripeSessionId: session.id,
         createdAt: new Date().toISOString()
       };
       store.orders.unshift(order);

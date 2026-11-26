@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sbPayBtn?.addEventListener('click', () => {
     const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
-    const email = $('#sb-email')?.value?.trim() || 'customer@email.com';
+    const email = $('#sb-email')?.value?.trim() || '';
     if (sbRail === 'stripe') {
       openStripeCheckout({
         amountUsd,
@@ -101,20 +101,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const railLabel = sbRail === 'paypal' ? 'PayPal' : 'Apple Pay or Google Pay';
     if (sbConsole) {
-      sbConsole.textContent = `${formatUSD(amountUsd)} via ${railLabel}. ${email} continues to checkout.`;
+      sbConsole.textContent = `${formatUSD(amountUsd)} via ${railLabel}. Stripe is the live payment option.`;
     }
   });
 
   $('#plugin-stripe-pay')?.addEventListener('click', () => {
+    const amountUsd = Math.max(1, Number($('#plugin-amount')?.value) || 49);
+    const email = $('#plugin-email')?.value?.trim() || '';
     openStripeCheckout({
-      amountUsd: 49,
-      email: 'customer@email.com',
+      amountUsd,
+      email,
       item: 'Product name',
       rail: 'stripe',
       button: $('#plugin-stripe-pay'),
       status: $('#plugin-stripe-status')
     });
   });
+
+  const checkoutParams = new URLSearchParams(window.location.search);
+  if (checkoutParams.get('checkout') === 'success' && checkoutParams.get('order')) {
+    const orderId = checkoutParams.get('order');
+    fetch(`/api/stripe/confirm?order=${encodeURIComponent(orderId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const paid = data.order?.status === 'paid' || data.paymentStatus === 'paid';
+        const message = paid
+          ? `${orderId} was paid and sent to your Stripe account.`
+          : `${orderId} is waiting on Stripe.`;
+        if (sbConsole) sbConsole.textContent = message;
+        const pluginStatus = $('#plugin-stripe-status');
+        if (pluginStatus) pluginStatus.textContent = message;
+      })
+      .catch(() => {});
+  }
 
   // ------------------------------------------------------------------------
   // 2. Mobile Navigation Drawer
