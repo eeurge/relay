@@ -5,11 +5,11 @@
 
 :root {
   /* Surfaces */
-  --bg-canvas: #06070a;
-  --bg-band: #0b0d13;
-  --bg-card: #10131c;
-  --bg-card-2: #151926;
-  --bg-header: rgba(6, 7, 10, 0.78);
+  --bg-canvas: #070808;
+  --bg-band: #0a0b0d;
+  --bg-card: #101113;
+  --bg-card-2: #16181b;
+  --bg-header: rgba(7, 8, 8, 0.86);
 
   /* Borders */
   --border-subtle: rgba(255, 255, 255, 0.07);
@@ -246,11 +246,14 @@ svg { display: block; }
 
 .hero {
   position: relative;
-  padding: 76px 0 84px;
+  min-height: calc(100vh - 40px);
+  display: flex;
+  align-items: center;
+  padding: 48px 0;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 60% 45% at 22% 0%, rgba(16, 185, 129, 0.14), transparent 65%),
-    radial-gradient(ellipse 50% 45% at 85% 20%, rgba(56, 189, 248, 0.1), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 22% 0%, rgba(16, 185, 129, 0.12), transparent 65%),
+    radial-gradient(ellipse 50% 45% at 85% 20%, rgba(56, 189, 248, 0.08), transparent 60%),
     var(--bg-canvas);
 }
 
@@ -1110,7 +1113,7 @@ svg { display: block; }
 @media (max-width: 768px) {
   .nav-pill, .header-desktop-btn { display: none; }
   .mobile-toggle { display: inline-flex; }
-  .hero { padding: 48px 0 60px; }
+  .hero { min-height: 0; padding: 48px 0 60px; }
   .metrics-grid, .flow-strip, .bento-bottom, .pricing-grid, .footer-grid, .form-row-2, .sandbox-inputs, .sandbox-methods {
     grid-template-columns: 1fr;
   }

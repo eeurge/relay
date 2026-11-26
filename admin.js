@@ -192,7 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderChart();
     renderMix();
-    renderAttention(isAdmin);
     renderQuickRails(isAdmin);
     renderOrders(isAdmin);
     renderVendors(isAdmin);
@@ -328,32 +327,6 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   }
 
-  function renderAttention(isAdmin) {
-    const host = $('#attention-list');
-    if (!host) return;
-    const pendingVendors = state.vendors.filter((vendor) => vendor.status === 'pending').length;
-    const waiting = state.payouts.filter((payout) => payout.status === 'pending').reduce((sum, payout) => sum + payout.amount, 0);
-    const items = isAdmin
-      ? [
-          ['Vendor applications', String(pendingVendors), 'vendors'],
-          ['Crypto cashouts', usd(waiting), 'payouts'],
-          ['Transactions', String(state.orders.length), 'orders']
-        ]
-      : [
-          ['Ready to cash out', usd(state.kpis.pendingPayouts), 'payouts'],
-          ['Paid orders', String(state.orders.filter((order) => order.status === 'paid' || order.status === 'settled').length), 'orders'],
-          ['Payout method', state.vendors[0]?.payoutMethod || 'Crypto', 'payouts']
-        ];
-    host.innerHTML = items.map(([label, value, view]) => `
-      <button type="button" class="attention-item" data-jump-view="${view}">
-        <span>${esc(label)}</span><strong>${esc(value)}</strong>
-      </button>
-    `).join('');
-    $$('[data-jump-view]', host).forEach((button) => {
-      button.addEventListener('click', () => switchView(button.dataset.jumpView));
-    });
-  }
-
   function renderQuickRails(isAdmin) {
     const rails = [
       ['stripe', 'Stripe', 'Card payments through Stripe'],
@@ -398,17 +371,22 @@ document.addEventListener('DOMContentLoaded', () => {
       o.customerEmail.toLowerCase().includes(query)
     );
 
-    $('#overview-orders-body').innerHTML = state.orders.length ? state.orders.slice(0, 5).map((o) => `
-      <tr>
-        <td class="mono" style="color:#fff;font-weight:600;">${esc(o.id)}</td>
-        <td>${esc(o.vendorName)}</td>
-        <td><span class="badge badge--sky">${esc(o.rail)}</span></td>
-        <td class="mono">${usd(o.gross)}</td>
-        <td class="mono" style="color:var(--accent-text);">${usd(o.fee)}</td>
-        <td class="mono">${usd(o.net)}</td>
-        <td>${statusBadge(o.status)}</td>
-      </tr>
-    `).join('') : '<tr><td colspan="7" style="color:var(--text-muted);">No transactions yet. Approved vendor checkouts will show up here.</td></tr>';
+    const recentHost = $('#overview-orders-body');
+    if (recentHost) {
+      const recent = state.orders.slice(0, 5);
+      recentHost.innerHTML = recent.length ? recent.map((o) => `
+        <button type="button" class="tx-row" data-jump-view="orders">
+          <span>
+            <strong>${esc(o.id)}</strong>
+            <span class="tx-meta">${esc(o.vendorName)} · ${esc(o.rail)}</span>
+          </span>
+          <span class="tx-amt">${usd(o.gross)}</span>
+        </button>
+      `).join('') : '<div class="tx-empty">No transactions yet.</div>';
+      $$('[data-jump-view]', recentHost).forEach((button) => {
+        button.addEventListener('click', () => switchView(button.dataset.jumpView));
+      });
+    }
 
     $('#orders-table-body').innerHTML = filtered.length ? filtered.map((o) => `
       <tr>

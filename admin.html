@@ -184,27 +184,15 @@
               </div>
             </div>
             <div class="panel" id="attention-panel">
-              <div class="panel-head"><span class="panel-title">Needs attention</span></div>
-              <div class="panel-body" id="attention-list"></div>
+              <div class="panel-head">
+                <span class="panel-title">Latest transactions</span>
+                <button type="button" class="btn btn--secondary btn--xs" data-jump-view="orders">View all</button>
+              </div>
+              <div class="panel-body" id="overview-orders-body"></div>
               <div id="rails-panel">
                 <div class="panel-head"><span class="panel-title">Rails</span></div>
                 <div class="panel-body" id="quick-rails-panel"></div>
               </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-head">
-              <span class="panel-title">Latest Transactions</span>
-              <button type="button" class="btn btn--secondary btn--xs" data-jump-view="orders">View all</button>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>Order</th><th>Vendor</th><th>Rail</th><th>Gross</th><th>Relay Fee</th><th>Vendor Net</th><th>Status</th></tr>
-                </thead>
-                <tbody id="overview-orders-body"></tbody>
-              </table>
             </div>
           </div>
         </section>
