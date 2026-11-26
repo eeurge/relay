@@ -35,8 +35,20 @@
       </nav>
 
       <div class="header-actions">
-        <button type="button" class="quiet-link header-desktop-btn" data-open-signup>Sign up</button>
-        <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-open-signin>Sign in</button>
+        <button type="button" class="quiet-link header-desktop-btn" data-guest-only data-open-signup>Sign up</button>
+        <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-guest-only data-open-signin>Sign in</button>
+        <div class="account-menu" id="home-account" hidden>
+          <button type="button" class="user-pill" id="home-account-btn" aria-expanded="false" aria-haspopup="menu">
+            <span class="user-avatar" id="home-avatar">R</span>
+            <span id="home-account-name">Relay</span>
+          </button>
+          <div class="account-drop" id="home-account-drop" role="menu" hidden>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/dashboard?view=settings" role="menuitem" id="home-account-settings">Settings</a>
+            <button type="button" role="menuitem" id="home-account-switch">Change account</button>
+            <button type="button" role="menuitem" id="home-account-logout">Sign out</button>
+          </div>
+        </div>
         <button type="button" class="btn btn--primary btn--sm header-desktop-btn" data-open-apply>Apply as vendor</button>
         <button type="button" class="mobile-toggle" id="mobile-toggle" aria-label="Open menu" aria-expanded="false">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -52,8 +64,8 @@
         <a href="#faqs">FAQ</a>
       </div>
       <div class="mobile-drawer-actions">
-        <button type="button" class="btn btn--secondary btn--full" data-open-signup>Sign up</button>
-        <button type="button" class="btn btn--secondary btn--full" data-open-signin>Sign in</button>
+        <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signup>Sign up</button>
+        <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signin>Sign in</button>
         <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
       </div>
     </div>

@@ -749,6 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       showDeskPath('/dashboard');
+      if (new URLSearchParams(location.search).get('view') === 'settings') switchView('settings');
     } catch {
       return;
     }

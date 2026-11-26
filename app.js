@@ -35,6 +35,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadPublicConfig();
 
+  function closeHomeAccount() {
+    const menu = $('#home-account-drop');
+    const button = $('#home-account-btn');
+    if (menu) menu.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  async function refreshHomeSession() {
+    let user = null;
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      if (data.authenticated) user = data.user;
+    } catch {}
+    $$('[data-guest-only]').forEach((el) => { el.hidden = Boolean(user); });
+    const account = $('#home-account');
+    if (account) account.hidden = !user;
+    if (!user) return;
+    const first = String(user.name || 'Relay').split(' ')[0];
+    $('#home-account-name').textContent = first;
+    $('#home-avatar').textContent = first.slice(0, 1).toUpperCase();
+    const settings = $('#home-account-settings');
+    if (settings) settings.hidden = !['super_admin', 'admin', 'operator'].includes(user.role);
+  }
+
+  $('#home-account-btn')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const menu = $('#home-account-drop');
+    const open = menu.hidden;
+    menu.hidden = !open;
+    $('#home-account-btn').setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('#home-account')) closeHomeAccount();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeHomeAccount();
+  });
+
+  async function homeSignOut(openSignIn) {
+    closeHomeAccount();
+    await fetch('/api/auth/logout', { method: 'POST' });
+    await refreshHomeSession();
+    if (openSignIn) $('#header-signin-btn')?.click();
+  }
+  $('#home-account-logout')?.addEventListener('click', () => homeSignOut(false));
+  $('#home-account-switch')?.addEventListener('click', () => homeSignOut(true));
+
+  refreshHomeSession();
+
   let sbRail = 'stripe';
   const sbAmount = $('#sb-amount');
   const sbPriceDisplay = $('#sb-price-display');
