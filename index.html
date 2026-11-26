@@ -35,6 +35,7 @@
       </nav>
 
       <div class="header-actions">
+        <button type="button" class="quiet-link header-desktop-btn" data-open-signup>Sign up</button>
         <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-open-signin>Sign in</button>
         <button type="button" class="btn btn--primary btn--sm header-desktop-btn" data-open-apply>Apply as vendor</button>
         <button type="button" class="mobile-toggle" id="mobile-toggle" aria-label="Open menu" aria-expanded="false">
@@ -51,6 +52,7 @@
         <a href="#faqs">FAQ</a>
       </div>
       <div class="mobile-drawer-actions">
+        <button type="button" class="btn btn--secondary btn--full" data-open-signup>Sign up</button>
         <button type="button" class="btn btn--secondary btn--full" data-open-signin>Sign in</button>
         <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
       </div>
@@ -504,6 +506,36 @@
 
         <div id="signin-error" class="alert-err" hidden></div>
         <button type="submit" class="btn btn--primary btn--lg btn--full">Sign in &amp; open dashboard</button>
+        <button type="button" class="quiet-link" data-open-signup>Create an account</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 class="modal-title" id="signup-title">Create your Relay account</h3>
+          <p class="modal-sub">Use this email and password the next time you sign in.</p>
+        </div>
+        <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
+      </div>
+      <form id="signup-form" class="form-stack">
+        <div>
+          <label class="field-label" for="signup-name">Name</label>
+          <input type="text" id="signup-name" class="input" placeholder="Your name" required maxlength="80" />
+        </div>
+        <div>
+          <label class="field-label" for="signup-email">Email</label>
+          <input type="email" id="signup-email" class="input" placeholder="you@email.com" required />
+        </div>
+        <div>
+          <label class="field-label" for="signup-password">Password</label>
+          <input type="password" id="signup-password" class="input" placeholder="At least 8 characters" required minlength="8" />
+        </div>
+        <div id="signup-error" class="alert-err" hidden></div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Create account</button>
+        <button type="button" class="quiet-link" data-open-signin>Already have an account? Sign in</button>
       </form>
     </div>
   </div>

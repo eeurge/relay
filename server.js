@@ -612,6 +612,50 @@ app.post('/api/public/apply', (req, res) => {
 // ---------------------------------------------------------------------------
 // Authentication & Session Endpoints
 // ---------------------------------------------------------------------------
+function startSession(res, user) {
+  const token = crypto.randomBytes(24).toString('hex');
+  const ttlMs = 24 * 3600 * 1000;
+  sessions.set(token, { userId: user.id, expiresAt: Date.now() + ttlMs });
+  res.setHeader(
+    'Set-Cookie',
+    `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400${BASE_URL.startsWith('https://') ? '; Secure' : ''}`
+  );
+  return token;
+}
+
+app.post('/api/auth/signup', (req, res) => {
+  const { name = '', email = '', password = '' } = req.body || {};
+  const cleanName = String(name).trim().slice(0, 80);
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const cleanPassword = String(password);
+  if (cleanName.length < 2) return res.status(400).json({ error: 'Enter your name.' });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return res.status(400).json({ error: 'Enter a valid email.' });
+  }
+  if (cleanPassword.length < 8) return res.status(400).json({ error: 'Use at least 8 characters.' });
+  if (store.users.some((user) => user.email === normalizedEmail)) {
+    return res.status(409).json({ error: 'An account with that email already exists.' });
+  }
+
+  const user = makeUserRecord({
+    id: `usr_${crypto.randomBytes(6).toString('hex')}`,
+    name: cleanName,
+    email: normalizedEmail,
+    password: cleanPassword,
+    role: 'member',
+    temp: false,
+    expiresAt: null,
+    note: 'Signed up on the site'
+  });
+  store.users.push(user);
+  saveStore(store);
+  const token = startSession(res, user);
+  res.status(201).json({
+    token,
+    user: { id: user.id, name: user.name, email: user.email, role: user.role }
+  });
+});
+
 app.post('/api/auth/login', (req, res) => {
   const { email = '', password = '' } = req.body || {};
   const normalizedEmail = String(email).trim().toLowerCase();
@@ -633,14 +677,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
-  const token = crypto.randomBytes(24).toString('hex');
-  const ttlMs = 24 * 3600 * 1000;
-  sessions.set(token, { userId: user.id, expiresAt: Date.now() + ttlMs });
-
-  res.setHeader(
-    'Set-Cookie',
-    `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400${BASE_URL.startsWith('https://') ? '; Secure' : ''}`
-  );
+  const token = startSession(res, user);
   res.json({
     token,
     user: {
@@ -671,10 +708,10 @@ app.get('/api/auth/me', (req, res) => {
 // ---------------------------------------------------------------------------
 app.get('/api/admin/overview', requireAuth, (req, res) => {
   const isAdmin = ['super_admin', 'admin', 'operator'].includes(req.user.role);
-  const vendorScope = isAdmin ? null : (req.user.vendorId || 'vnd_vendor');
+  const vendorScope = isAdmin ? null : (req.user.vendorId || null);
   const visibleOrders = isAdmin
     ? store.orders
-    : store.orders.filter((o) => o.vendorId === vendorScope);
+    : store.orders.filter((o) => vendorScope && o.vendorId === vendorScope);
 
   const grossVolume = visibleOrders
     .filter((o) => o.status !== 'refunded')

@@ -407,6 +407,7 @@ if (event.type === 'checkout.session.completed') {
   // 7. Modals: Sign In & Vendor Application
   // ------------------------------------------------------------------------
   const signinModal = $('#signin-modal');
+  const signupModal = $('#signup-modal');
   const applyModal = $('#apply-modal');
 
   function openModal(m) {
@@ -416,18 +417,24 @@ if (event.type === 'checkout.session.completed') {
   }
 
   function closeModals() {
-    [signinModal, applyModal].forEach((m) => { if (m) m.hidden = true; });
+    [signinModal, signupModal, applyModal].forEach((m) => { if (m) m.hidden = true; });
     document.body.style.overflow = '';
   }
 
   $$('[data-close-modal]').forEach((b) => b.addEventListener('click', closeModals));
-  [signinModal, applyModal].forEach((m) => m?.addEventListener('click', (e) => { if (e.target === m) closeModals(); }));
+  [signinModal, signupModal, applyModal].forEach((m) => m?.addEventListener('click', (e) => { if (e.target === m) closeModals(); }));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModals(); });
 
   $$('[data-open-signin]').forEach((b) => b.addEventListener('click', () => {
     $('#signin-error').hidden = true;
     openModal(signinModal);
     setTimeout(() => $('#login-email')?.focus(), 50);
+  }));
+
+  $$('[data-open-signup]').forEach((b) => b.addEventListener('click', () => {
+    $('#signup-error').hidden = true;
+    openModal(signupModal);
+    setTimeout(() => $('#signup-name')?.focus(), 50);
   }));
 
   $$('[data-fill-login]').forEach((chip) => {
@@ -452,6 +459,29 @@ if (event.type === 'checkout.session.completed') {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Sign in failed');
+      window.location.href = '/admin.html';
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+  });
+
+  $('#signup-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = $('#signup-error');
+    errEl.hidden = true;
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: $('#signup-name').value.trim(),
+          email: $('#signup-email').value.trim(),
+          password: $('#signup-password').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not create the account');
       window.location.href = '/admin.html';
     } catch (err) {
       errEl.textContent = err.message;
