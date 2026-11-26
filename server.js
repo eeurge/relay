@@ -691,6 +691,42 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
+app.post('/api/auth/account', (req, res) => {
+  const sessionUser = getSessionUser(req);
+  if (!sessionUser) return res.status(401).json({ error: 'Sign in again.' });
+  const user = store.users.find((item) => item.id === sessionUser.id && item.active);
+  if (!user) return res.status(401).json({ error: 'Sign in again.' });
+
+  const { name = '', email = '', currentPassword = '', newPassword = '' } = req.body || {};
+  const attemptHash = hashPassword(String(currentPassword), user.salt);
+  const passwordOk = crypto.timingSafeEqual(Buffer.from(attemptHash, 'hex'), Buffer.from(user.passwordHash, 'hex'));
+  if (!passwordOk) return res.status(401).json({ error: 'Current password is wrong.' });
+
+  const cleanName = String(name).trim().slice(0, 80);
+  if (cleanName.length < 2) return res.status(400).json({ error: 'Enter your name.' });
+  const nextEmail = String(email).trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+    return res.status(400).json({ error: 'Enter a valid email.' });
+  }
+  if (store.users.some((item) => item.email === nextEmail && item.id !== user.id)) {
+    return res.status(409).json({ error: 'An account with that email already exists.' });
+  }
+  if (newPassword && String(newPassword).length < 8) {
+    return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+  }
+
+  user.name = cleanName;
+  user.email = nextEmail;
+  if (newPassword) {
+    user.salt = crypto.randomBytes(12).toString('hex');
+    user.passwordHash = hashPassword(String(newPassword), user.salt);
+    user.tempPasswordHint = null;
+    user.isTemp = false;
+  }
+  saveStore(store);
+  res.json({ user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+});
+
 app.post('/api/auth/logout', (req, res) => {
   const cookies = parseCookies(req);
   if (cookies.relay_session) sessions.delete(cookies.relay_session);

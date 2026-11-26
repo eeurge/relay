@@ -282,6 +282,8 @@ button { background: none; border: 0; cursor: pointer; }
 }
 .input:focus, .select:focus { outline: none; border-color: var(--accent); }
 .label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+.alert-err { color: #fca5a5; font-size: 0.82rem; }
+.form-stack { display: flex; flex-direction: column; gap: 14px; }
 
 /* Badges */
 .badge {

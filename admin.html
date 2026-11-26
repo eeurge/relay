@@ -333,6 +333,34 @@
           </div>
         </section>
 
+        <section class="view" id="view-account">
+          <div class="panel">
+            <div class="panel-head"><span class="panel-title">Account</span></div>
+            <div class="panel-body">
+              <form id="account-form" class="form-stack" style="max-width:460px;">
+                <div>
+                  <label class="label" for="acct-name">Name</label>
+                  <input class="input" id="acct-name" type="text" required maxlength="80" />
+                </div>
+                <div>
+                  <label class="label" for="acct-email">Email</label>
+                  <input class="input" id="acct-email" type="email" required />
+                </div>
+                <div>
+                  <label class="label" for="acct-current">Current password</label>
+                  <input class="input" id="acct-current" type="password" required />
+                </div>
+                <div>
+                  <label class="label" for="acct-new">New password</label>
+                  <input class="input" id="acct-new" type="password" minlength="8" placeholder="Leave blank to keep the current password" />
+                </div>
+                <div id="account-error" class="alert-err" hidden></div>
+                <button type="submit" class="btn btn--primary">Save account</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
         <!-- VIEW 7: SITE CONTROLS -->
         <section class="view" id="view-settings">
           <div class="panel">

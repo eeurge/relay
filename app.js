@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#home-account-name').textContent = first;
     $('#home-avatar').textContent = first.slice(0, 1).toUpperCase();
     const settings = $('#home-account-settings');
-    if (settings) settings.hidden = !['super_admin', 'admin', 'operator'].includes(user.role);
+    if (settings) settings.hidden = false;
   }
 
   $('#home-account-btn')?.addEventListener('click', (event) => {

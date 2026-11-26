@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   $('#account-settings')?.addEventListener('click', () => {
     closeAccountMenu();
-    switchView('settings');
+    switchView('account');
   });
   $('#account-switch')?.addEventListener('click', signOut);
   $('#account-logout')?.addEventListener('click', signOut);
@@ -127,7 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     payouts: 'Payout Settlement Queue',
     stripe: 'Stripe & Payment Rails',
     logins: 'Temporary Logins & Access',
-    settings: 'Live Site Controls'
+    settings: 'Live Site Controls',
+    account: 'Account'
   };
 
   function switchView(view) {
@@ -135,6 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('.view').forEach((v) => v.classList.toggle('is-active', v.id === `view-${view}`));
     $('#topbar-title').textContent = viewTitles[view] || 'Admin';
     if (view === 'logins') loadTempLogins();
+    if (view === 'account' && state?.user) {
+      $('#acct-name').value = state.user.name || '';
+      $('#acct-email').value = state.user.email || '';
+      $('#acct-current').value = '';
+      $('#acct-new').value = '';
+    }
   }
 
   $$('.side-btn').forEach((b) => b.addEventListener('click', () => switchView(b.dataset.view)));
@@ -210,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';
     if ($('#sidebar-stripe-mode')) $('#sidebar-stripe-mode').textContent = modeBadgeText;
     const settingsItem = $('#account-settings');
-    if (settingsItem) settingsItem.hidden = !isAdmin;
+    if (settingsItem) settingsItem.hidden = false;
     if ($('#diag-mode-badge')) $('#diag-mode-badge').textContent = modeBadgeText;
     if ($('#mix-mode-badge')) $('#mix-mode-badge').textContent = modeBadgeText;
 
@@ -715,6 +722,42 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#set-accepting-toggle').classList.toggle('is-on', acceptingState);
   });
 
+  $('#account-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = $('#account-error');
+    errEl.hidden = true;
+    try {
+      const res = await fetch('/api/auth/account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: $('#acct-name').value.trim(),
+          email: $('#acct-email').value.trim(),
+          currentPassword: $('#acct-current').value,
+          newPassword: $('#acct-new').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save the account');
+      state.user.name = data.user.name;
+      state.user.email = data.user.email;
+      const first = data.user.name.split(' ')[0];
+      $('#cur-user-name').textContent = first;
+      $('#user-avatar').textContent = first.slice(0, 1).toUpperCase();
+      if ($('#welcome-title')) {
+        const hour = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/New_York' }).format(new Date()));
+        const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        $('#welcome-title').textContent = `${greet}, ${first}`;
+      }
+      $('#acct-current').value = '';
+      $('#acct-new').value = '';
+      showToast('Account saved.');
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+  });
+
   $('#settings-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const res = await fetch('/api/admin/settings', {
@@ -749,7 +792,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       showDeskPath('/dashboard');
-      if (new URLSearchParams(location.search).get('view') === 'settings') switchView('settings');
+      const requestedView = new URLSearchParams(location.search).get('view');
+      if (requestedView === 'account' || requestedView === 'settings') switchView('account');
     } catch {
       return;
     }
