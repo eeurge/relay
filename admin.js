@@ -141,8 +141,20 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#auth-gate').hidden = true;
     $('#app-shell').hidden = false;
 
-    $('#cur-user-name').textContent = `${state.user.name} (${state.user.role})`;
-    $('#cur-user-meta').textContent = state.user.email;
+    const firstName = String(state.user.name || 'Relay').split(' ')[0];
+    $('#cur-user-name').textContent = firstName;
+    const avatar = $('#user-avatar');
+    if (avatar) avatar.textContent = firstName.slice(0, 1).toUpperCase();
+    const meta = $('#cur-user-meta');
+    if (meta) meta.textContent = state.user.email;
+    const hour = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: 'America/New_York' }).format(new Date()));
+    const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    if ($('#welcome-title')) $('#welcome-title').textContent = `${greet}, ${firstName}`;
+    if ($('#welcome-sub')) {
+      $('#welcome-sub').textContent = isAdmin
+        ? 'Sales, vendor applications, and crypto cashouts.'
+        : 'Your sales, fees, and what is ready to cash out.';
+    }
     $('#nav-logins').hidden = !isAdmin;
     $('#nav-settings').hidden = !isAdmin;
     $('#nav-vendors').hidden = !isAdmin;
@@ -151,20 +163,20 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#add-vendor-panel').hidden = !isAdmin;
     $('#admin-test-checkout-btn').hidden = !isAdmin;
     $('#rails-panel').hidden = !isAdmin;
-    $('#overview-split').style.gridTemplateColumns = isAdmin ? '' : '1fr';
-    $('#nav-payouts-label').textContent = isAdmin ? 'Payout Queue' : 'Cashouts';
-    $('#chart-title').textContent = isAdmin ? '7-Day Processing Volume' : '7-Day Sales';
-    $('#kpi-gross-label').textContent = isAdmin ? 'Gross Processed Volume' : 'Your Sales';
-    $('#kpi-gross-sub').textContent = isAdmin ? 'Across Stripe, PayPal & Wallets' : 'Paid through your checkout';
-    $('#kpi-net-label').textContent = isAdmin ? 'Relay Net Commission' : 'Relay Fee';
-    $('#kpi-net-sub').textContent = isAdmin ? 'Earned platform margin' : 'Taken from your sales';
-    $('#kpi-pending-label').textContent = isAdmin ? 'Pending Vendor Payouts' : 'Ready to Cash Out';
+    $('#nav-payouts-label').textContent = 'Cashouts';
+    $('#chart-title').textContent = isAdmin ? 'Volume' : 'Your sales';
+    $('#kpi-gross-label').textContent = isAdmin ? 'Gross volume' : 'Your sales';
+    $('#kpi-gross-sub').textContent = isAdmin ? 'Card, PayPal, wallets' : 'Paid through your checkout';
+    $('#kpi-net-label').textContent = 'Relay fee';
+    $('#kpi-net-sub').textContent = isAdmin ? 'Platform margin' : 'Taken from your sales';
+    $('#kpi-pending-label').textContent = isAdmin ? 'Cashouts waiting' : 'Ready to cash out';
     $('#kpi-pending-sub').textContent = 'USDT / BTC';
-    $('#kpi-vendors-label').textContent = isAdmin ? 'Active Vendors' : 'Orders';
+    $('#kpi-vendors-label').textContent = isAdmin ? 'Vendors' : 'Orders';
 
     const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';
     $('#sidebar-stripe-mode').textContent = modeBadgeText;
-    $('#diag-mode-badge').textContent = modeBadgeText;
+    if ($('#diag-mode-badge')) $('#diag-mode-badge').textContent = modeBadgeText;
+    if ($('#mix-mode-badge')) $('#mix-mode-badge').textContent = modeBadgeText;
 
     // Counts
     $('#count-orders').textContent = state.orders.length;
@@ -179,6 +191,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#kpi-vendors-sub').textContent = isAdmin ? `${state.kpis.pendingVendors} pending review` : 'On your ledger';
 
     renderChart();
+    renderMix();
+    renderAttention(isAdmin);
     renderQuickRails(isAdmin);
     renderOrders(isAdmin);
     renderVendors(isAdmin);
@@ -188,45 +202,125 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
   }
 
+  function smoothLine(points) {
+    if (points.length < 2) return `M${points[0].x},${points[0].y}`;
+    let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const p0 = points[i - 1] || points[i];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2] || p2;
+      const c1x = p1.x + (p2.x - p0.x) / 6;
+      const c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6;
+      const c2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+    return d;
+  }
+
   function renderChart() {
     const data = state.chart7d.length ? state.chart7d : [{ day: 'Today', volume: 0 }];
-    const width = 680;
-    const height = 240;
-    const pad = { l: 44, r: 16, t: 22, b: 32 };
+    const width = 720;
+    const height = 260;
+    const pad = { l: 8, r: 8, t: 18, b: 28 };
     const max = Math.max(...data.map((point) => point.volume), 1);
     const innerW = width - pad.l - pad.r;
     const innerH = height - pad.t - pad.b;
     const points = data.map((point, index) => {
       const x = pad.l + (data.length === 1 ? innerW / 2 : (index / (data.length - 1)) * innerW);
-      const y = pad.t + innerH - (point.volume / max) * (innerH - 8);
+      const y = pad.t + innerH - (point.volume / max) * innerH;
       return { ...point, x, y };
     });
-    const line = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
-    const area = `${line} L${points[points.length - 1].x.toFixed(1)},${pad.t + innerH} L${points[0].x.toFixed(1)},${pad.t + innerH} Z`;
-    const grid = [0, 0.5, 1].map((step) => {
-      const y = pad.t + innerH - step * (innerH - 8);
-      const label = usd(max * step).replace('.00', '');
-      return `<line x1="${pad.l}" y1="${y}" x2="${width - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)" />
-        <text x="${pad.l - 8}" y="${y + 4}" text-anchor="end">${label}</text>`;
-    }).join('');
-    const dots = points.map((point) => `
-      <circle cx="${point.x}" cy="${point.y}" r="4.5" fill="#06110c" stroke="#34d399" stroke-width="2" />
-      <text x="${point.x}" y="${height - 10}" text-anchor="middle">${esc(point.day)}</text>
-    `).join('');
+    const line = smoothLine(points);
+    const base = pad.t + innerH;
+    const area = `${line} L${points[points.length - 1].x.toFixed(1)},${base} L${points[0].x.toFixed(1)},${base} Z`;
+    const labels = points.map((point) => `<text x="${point.x}" y="${height - 8}" text-anchor="middle">${esc(point.day)}</text>`).join('');
     $('#volume-chart').innerHTML = `
       <svg class="volume-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Volume over the last 7 days">
         <defs>
           <linearGradient id="volume-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#34d399" stop-opacity="0.35" />
+            <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.28" />
+            <stop offset="55%" stop-color="#34d399" stop-opacity="0.12" />
             <stop offset="100%" stop-color="#34d399" stop-opacity="0" />
           </linearGradient>
         </defs>
-        ${grid}
         <path d="${area}" fill="url(#volume-fill)" />
-        <path d="${line}" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
-        ${dots}
+        <path d="${line}" fill="none" stroke="#d7dde8" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+        ${labels}
       </svg>
     `;
+  }
+
+  function renderMix() {
+    const colors = { stripe: '#34d399', paypal: '#7dd3fc', wallets: '#c4b5fd' };
+    const labels = { stripe: 'Card', paypal: 'PayPal', wallets: 'Wallets' };
+    const totals = { stripe: 0, paypal: 0, wallets: 0 };
+    state.orders.forEach((order) => {
+      if (order.status !== 'paid' && order.status !== 'settled') return;
+      if (totals[order.rail] != null) totals[order.rail] += Number(order.gross) || 0;
+    });
+    const entries = Object.entries(totals);
+    const sum = entries.reduce((total, [, value]) => total + value, 0);
+    let angle = -90;
+    const arcs = entries.map(([key, value]) => {
+      const start = angle;
+      angle += sum ? (value / sum) * 360 : 0;
+      return { key, value, start, end: angle, color: colors[key] };
+    }).filter((arc) => arc.value > 0);
+    const point = (deg) => {
+      const rad = (deg * Math.PI) / 180;
+      return [56 + 42 * Math.cos(rad), 56 + 42 * Math.sin(rad)];
+    };
+    const paths = arcs.map((arc) => {
+      if (arc.end - arc.start >= 359.5) {
+        return `<circle cx="56" cy="56" r="42" fill="none" stroke="${arc.color}" stroke-width="12" />`;
+      }
+      const [x1, y1] = point(arc.start);
+      const [x2, y2] = point(arc.end - 0.2);
+      const large = arc.end - arc.start > 180 ? 1 : 0;
+      return `<path d="M${x1},${y1} A42,42 0 ${large} 1 ${x2},${y2}" fill="none" stroke="${arc.color}" stroke-width="12" stroke-linecap="butt" />`;
+    }).join('');
+    const lead = entries.slice().sort((a, b) => b[1] - a[1])[0];
+    const leadPct = sum ? Math.round((lead[1] / sum) * 100) : 0;
+    const host = $('#rail-mix');
+    if (!host) return;
+    host.innerHTML = `
+      <svg class="mix-svg" viewBox="0 0 112 112" aria-hidden="true">
+        <circle cx="56" cy="56" r="42" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+        ${paths}
+        <text x="56" y="60" text-anchor="middle" fill="#fff" font-size="16" font-family="Plus Jakarta Sans, sans-serif" font-weight="700">${leadPct}%</text>
+      </svg>
+      <div class="mix-legend">
+        ${entries.map(([key, value]) => `<div class="mix-row"><span><i class="mix-dot" style="background:${colors[key]}"></i>${labels[key]}</span><strong>${usd(value)}</strong></div>`).join('')}
+      </div>
+    `;
+  }
+
+  function renderAttention(isAdmin) {
+    const host = $('#attention-list');
+    if (!host) return;
+    const pendingVendors = state.vendors.filter((vendor) => vendor.status === 'pending').length;
+    const waiting = state.payouts.filter((payout) => payout.status === 'pending').reduce((sum, payout) => sum + payout.amount, 0);
+    const items = isAdmin
+      ? [
+          ['Vendor applications', String(pendingVendors), 'vendors'],
+          ['Crypto cashouts', usd(waiting), 'payouts'],
+          ['Transactions', String(state.orders.length), 'orders']
+        ]
+      : [
+          ['Ready to cash out', usd(state.kpis.pendingPayouts), 'payouts'],
+          ['Paid orders', String(state.orders.filter((order) => order.status === 'paid' || order.status === 'settled').length), 'orders'],
+          ['Payout method', state.vendors[0]?.payoutMethod || 'Crypto', 'payouts']
+        ];
+    host.innerHTML = items.map(([label, value, view]) => `
+      <button type="button" class="attention-item" data-jump-view="${view}">
+        <span>${esc(label)}</span><strong>${esc(value)}</strong>
+      </button>
+    `).join('');
+    $$('[data-jump-view]', host).forEach((button) => {
+      button.addEventListener('click', () => switchView(button.dataset.jumpView));
+    });
   }
 
   function renderQuickRails(isAdmin) {
@@ -590,6 +684,19 @@ document.addEventListener('DOMContentLoaded', () => {
       refreshOverview();
     }
   });
+
+  function tickClock() {
+    const clock = $('#welcome-clock');
+    if (!clock) return;
+    clock.textContent = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/New_York'
+    }).format(new Date());
+  }
+
+  tickClock();
+  setInterval(tickClock, 30000);
 
   async function initDashboard() {
     try {
