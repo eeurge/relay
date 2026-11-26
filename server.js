@@ -62,68 +62,24 @@ function makeUserRecord({ id, name, email, password, role, temp = true, expiresA
   };
 }
 
-function exampleVendorBundle() {
-  const now = Date.now();
-  const day = 86400000;
-  const samples = [
-    [6, 42, 'stripe'],
-    [5, 128, 'paypal'],
-    [4, 76, 'wallets'],
-    [3, 210, 'stripe'],
-    [2, 64, 'stripe'],
-    [1, 155, 'paypal'],
-    [0, 89, 'wallets']
-  ];
-  const orders = samples.map(([daysAgo, gross, rail], index) => {
-    const fee = Math.round((gross * 0.06 + 0.3) * 100) / 100;
-    return {
-      id: `RL-EX${index + 1}`,
-      vendorId: 'vnd_example',
-      vendorName: 'Example Store',
-      item: 'Example Product',
-      customerEmail: 'customer@email.com',
-      rail,
-      gross,
-      fee,
-      net: Math.round((gross - fee) * 100) / 100,
-      status: 'paid',
-      webhookStatus: '200 OK',
-      stripeRef: `pi_example_${index + 1}`,
-      createdAt: new Date(now - daysAgo * day - 3 * 3600000).toISOString()
-    };
-  });
-  const net = orders.reduce((sum, order) => sum + order.net, 0);
+function vendorLoginRecord() {
   return {
-    vendor: {
-      id: 'vnd_example',
-      name: 'Example Store',
-      website: 'https://yourstore.com',
-      email: 'vendor@relay.dev',
-      discord: 'example',
-      contact: 'vendor@relay.dev',
-      description: 'Example vendor account for viewing the dashboard.',
-      tier: 'growth',
-      rate: 6,
-      status: 'active',
-      rails: { stripe: true, paypal: true },
-      payoutMethod: 'USDT (TRC-20)',
-      payoutDest: 'Pending crypto wallet',
-      apiKey: 'rl_example_store',
-      monthlyVolume: 25000,
-      createdAt: new Date(now - 10 * day).toISOString()
-    },
-    orders,
-    payout: {
-      id: 'PO-EX1',
-      vendorId: 'vnd_example',
-      vendorName: 'Example Store',
-      amount: Math.round(net * 100) / 100,
-      method: 'USDT (TRC-20)',
-      destination: 'Pending crypto wallet',
-      status: 'pending',
-      txHash: null,
-      createdAt: new Date(now - 2 * 3600000).toISOString()
-    }
+    id: 'vnd_vendor',
+    name: 'Vendor',
+    website: '',
+    email: 'vendor@relay.dev',
+    discord: '',
+    contact: 'vendor@relay.dev',
+    description: '',
+    tier: 'growth',
+    rate: 6,
+    status: 'active',
+    rails: { stripe: true, paypal: true },
+    payoutMethod: 'USDT (TRC-20)',
+    payoutDest: '',
+    apiKey: 'rl_vendor_live',
+    monthlyVolume: 0,
+    createdAt: new Date().toISOString()
   };
 }
 
@@ -177,27 +133,29 @@ function createInitialStore() {
 }
 
 function ensureVendorLogin(store) {
-  const bundle = exampleVendorBundle();
+  store.orders = (store.orders || []).filter((order) => !String(order.id || '').startsWith('RL-EX') && !String(order.stripeRef || '').startsWith('pi_example_'));
+  store.payouts = (store.payouts || []).filter((payout) => payout.id !== 'PO-EX1' && !String(payout.id || '').startsWith('PO-EX'));
+  store.vendors = (store.vendors || []).filter((vendor) => vendor.id !== 'vnd_example' && vendor.name !== 'Example Store');
+
   if (!store.users.some((user) => user.email === 'vendor@relay.dev')) {
     store.users.push(makeUserRecord({
       id: 'usr_vendor_1',
-      name: 'Example Vendor',
+      name: 'Vendor',
       email: 'vendor@relay.dev',
       password: 'RelayVendor!2026',
       role: 'vendor',
-      vendorId: 'vnd_example',
+      vendorId: 'vnd_vendor',
       temp: true,
       expiresAt: null,
       note: 'Vendor dashboard login'
     }));
   } else {
     const existing = store.users.find((user) => user.email === 'vendor@relay.dev');
-    existing.vendorId = existing.vendorId || 'vnd_example';
+    if (existing.name === 'Example Vendor') existing.name = 'Vendor';
+    if (!existing.vendorId || existing.vendorId === 'vnd_example') existing.vendorId = 'vnd_vendor';
     existing.role = 'vendor';
   }
-  if (!store.vendors.some((vendor) => vendor.id === 'vnd_example')) store.vendors.push(bundle.vendor);
-  if (!store.orders.some((order) => order.vendorId === 'vnd_example')) store.orders.push(...bundle.orders);
-  if (!store.payouts.some((payout) => payout.vendorId === 'vnd_example')) store.payouts.unshift(bundle.payout);
+  if (!store.vendors.some((vendor) => vendor.id === 'vnd_vendor')) store.vendors.push(vendorLoginRecord());
   return store;
 }
 
@@ -640,7 +598,7 @@ app.get('/api/auth/me', (req, res) => {
 // ---------------------------------------------------------------------------
 app.get('/api/admin/overview', requireAuth, (req, res) => {
   const isAdmin = ['super_admin', 'admin', 'operator'].includes(req.user.role);
-  const vendorScope = isAdmin ? null : (req.user.vendorId || 'vnd_example');
+  const vendorScope = isAdmin ? null : (req.user.vendorId || 'vnd_vendor');
   const visibleOrders = isAdmin
     ? store.orders
     : store.orders.filter((o) => o.vendorId === vendorScope);

@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.RelayCheckout.open({
       vendorId: vendor.id,
-      item: 'Example Product',
+      item: 'Product',
       amountUsd: 99,
       rail: 'stripe',
       onSuccess: () => {
@@ -222,38 +222,69 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderChart() {
     const data = state.chart7d.length ? state.chart7d : [{ day: 'Today', volume: 0 }];
     const width = 720;
-    const height = 260;
-    const pad = { l: 8, r: 8, t: 18, b: 28 };
+    const height = 248;
+    const pad = { l: 12, r: 12, t: 28, b: 28 };
     const max = Math.max(...data.map((point) => point.volume), 1);
     const innerW = width - pad.l - pad.r;
     const innerH = height - pad.t - pad.b;
     const points = data.map((point, index) => {
       const x = pad.l + (data.length === 1 ? innerW / 2 : (index / (data.length - 1)) * innerW);
-      const y = pad.t + innerH - (point.volume / max) * innerH;
+      const y = pad.t + innerH - (point.volume / max) * (innerH - 6);
       return { ...point, x, y };
     });
     const line = smoothLine(points);
     const base = pad.t + innerH;
     const area = `${line} L${points[points.length - 1].x.toFixed(1)},${base} L${points[0].x.toFixed(1)},${base} Z`;
     const labels = points.map((point) => `<text x="${point.x}" y="${height - 8}" text-anchor="middle">${esc(point.day)}</text>`).join('');
-    $('#volume-chart').innerHTML = `
+    const host = $('#volume-chart');
+    host.innerHTML = `
       <svg class="volume-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Volume over the last 7 days">
         <defs>
           <linearGradient id="volume-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.28" />
-            <stop offset="55%" stop-color="#34d399" stop-opacity="0.12" />
-            <stop offset="100%" stop-color="#34d399" stop-opacity="0" />
+            <stop offset="0%" stop-color="#6ea2ff" stop-opacity="0.28" />
+            <stop offset="100%" stop-color="#6ea2ff" stop-opacity="0" />
           </linearGradient>
         </defs>
+        <line x1="${pad.l}" y1="${base}" x2="${width - pad.r}" y2="${base}" stroke="rgba(140,170,210,0.12)" />
         <path d="${area}" fill="url(#volume-fill)" />
-        <path d="${line}" fill="none" stroke="#d7dde8" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+        <path d="${line}" fill="none" stroke="#8eb4ff" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+        <line id="chart-guide" x1="0" y1="${pad.t}" x2="0" y2="${base}" stroke="rgba(180,205,240,0.35)" stroke-dasharray="3 3" hidden />
+        <circle id="chart-dot" r="4.5" fill="#dbe7ff" stroke="#07101c" stroke-width="2" hidden />
         ${labels}
       </svg>
+      <div class="chart-tip" id="chart-tip" hidden></div>
     `;
+    const svg = host.querySelector('svg');
+    const tip = host.querySelector('#chart-tip');
+    const guide = host.querySelector('#chart-guide');
+    const dot = host.querySelector('#chart-dot');
+    const focus = (clientX) => {
+      const rect = svg.getBoundingClientRect();
+      const x = ((clientX - rect.left) / rect.width) * width;
+      let nearest = points[0];
+      points.forEach((point) => {
+        if (Math.abs(point.x - x) < Math.abs(nearest.x - x)) nearest = point;
+      });
+      guide.removeAttribute('hidden');
+      dot.removeAttribute('hidden');
+      guide.setAttribute('x1', nearest.x);
+      guide.setAttribute('x2', nearest.x);
+      dot.setAttribute('cx', nearest.x);
+      dot.setAttribute('cy', nearest.y);
+      tip.hidden = false;
+      tip.textContent = `${nearest.day} · ${usd(nearest.volume)}`;
+      tip.style.left = `${(nearest.x / width) * rect.width}px`;
+    };
+    svg.addEventListener('mousemove', (event) => focus(event.clientX));
+    svg.addEventListener('mouseleave', () => {
+      tip.hidden = true;
+      guide.setAttribute('hidden', '');
+      dot.setAttribute('hidden', '');
+    });
   }
 
   function renderMix() {
-    const colors = { stripe: '#34d399', paypal: '#7dd3fc', wallets: '#c4b5fd' };
+    const colors = { stripe: '#8eb4ff', paypal: '#5b7fd6', wallets: '#c5d2e4' };
     const labels = { stripe: 'Card', paypal: 'PayPal', wallets: 'Wallets' };
     const totals = { stripe: 0, paypal: 0, wallets: 0 };
     state.orders.forEach((order) => {
@@ -325,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderQuickRails(isAdmin) {
     const rails = [
-      ['stripe', 'Stripe Cards', 'Visa, Mastercard, Amex via Stripe SDK'],
+      ['stripe', 'Stripe', 'Card payments through Stripe'],
       ['paypal', 'PayPal Express', 'PayPal checkout rail'],
       ['wallets', 'Apple & Google Pay', 'Biometric express wallets'],
       ['radar3ds', '3DS2 Fraud Shield', 'Enforce 3D Secure & risk scoring']
@@ -396,9 +427,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="mono" style="font-size:0.74rem;">${esc(o.webhookStatus)}</td>
         <td>${statusBadge(o.status)}</td>
         <td class="actions-cell">
-          ${isAdmin && o.status === 'paid' ? `<button class="btn btn--primary btn--xs" data-order-act="settled" data-order-id="${esc(o.id)}">Settle</button>` : ''}
-          ${isAdmin && o.status !== 'refunded' ? `<button class="btn btn--danger btn--xs" data-order-act="refunded" data-order-id="${esc(o.id)}">Refund</button>` : ''}
-          ${isAdmin ? `<button class="btn btn--secondary btn--xs" data-order-hook="${esc(o.id)}">Webhook</button>` : ''}
+          <div class="row-actions">
+            ${isAdmin && o.status === 'paid' ? `<button class="btn btn--primary btn--xs" data-order-act="settled" data-order-id="${esc(o.id)}">Settle</button>` : ''}
+            ${isAdmin && o.status !== 'refunded' ? `<button class="btn btn--danger btn--xs" data-order-act="refunded" data-order-id="${esc(o.id)}">Refund</button>` : ''}
+            ${isAdmin ? `<button class="btn btn--secondary btn--xs" data-order-hook="${esc(o.id)}">Webhook</button>` : ''}
+          </div>
         </td>
       </tr>
     `).join('') : '<tr><td colspan="9" style="color:var(--text-muted);">No transactions yet.</td></tr>';
@@ -452,10 +485,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="mono" style="font-size:0.72rem;">${esc(v.apiKey)}</td>
         <td style="font-size:0.78rem;">${esc(v.payoutMethod)}</td>
         <td class="actions-cell">
-          ${isAdmin && v.status !== 'active' ? `<button class="btn btn--primary btn--xs" data-vnd-status="active" data-vnd-id="${esc(v.id)}">Approve</button>` : ''}
-          ${isAdmin && v.status === 'active' ? `<button class="btn btn--secondary btn--xs" data-vnd-status="paused" data-vnd-id="${esc(v.id)}">Pause</button>` : ''}
-          ${isAdmin ? `<button class="btn btn--secondary btn--xs" data-vnd-rate="${esc(v.id)}" data-cur-rate="${v.rate}">Edit %</button>` : ''}
-          <button class="btn btn--secondary btn--xs" data-copy-key="${esc(v.apiKey)}">Copy Key</button>
+          <div class="row-actions">
+            ${isAdmin && v.status !== 'active' ? `<button class="btn btn--primary btn--xs" data-vnd-status="active" data-vnd-id="${esc(v.id)}">Approve</button>` : ''}
+            ${isAdmin && v.status === 'active' ? `<button class="btn btn--secondary btn--xs" data-vnd-status="paused" data-vnd-id="${esc(v.id)}">Pause</button>` : ''}
+            ${isAdmin ? `<button class="btn btn--secondary btn--xs" data-vnd-rate="${esc(v.id)}" data-cur-rate="${v.rate}">Edit %</button>` : ''}
+            <button class="btn btn--secondary btn--xs" data-copy-key="${esc(v.apiKey)}">Copy Key</button>
+          </div>
         </td>
       </tr>
     `).join('');
@@ -531,10 +566,12 @@ document.addEventListener('DOMContentLoaded', () => {
           ${statusBadge(p.status)}
           ${p.txHash ? `<div class="mono" style="font-size:0.7rem;color:var(--text-subtle);margin-top:3px;">${esc(p.txHash)}</div>` : ''}
         </td>
-        <td>
-          ${isAdmin && p.status === 'pending'
-            ? `<button class="btn btn--primary btn--xs" data-release-payout="${esc(p.id)}">Mark Paid</button>`
-            : '<span style="font-size:0.75rem;color:var(--text-subtle);">Completed</span>'}
+        <td class="actions-cell">
+          <div class="row-actions">
+            ${isAdmin && p.status === 'pending'
+              ? `<button class="btn btn--primary btn--xs" data-release-payout="${esc(p.id)}">Mark Paid</button>`
+              : '<span style="font-size:0.75rem;color:var(--text-subtle);">Completed</span>'}
+          </div>
         </td>
       </tr>
     `).join('');
@@ -571,7 +608,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sample = state.vendors[0];
     const vendorId = sample ? sample.id : 'vnd_yourid';
     const vendorKey = sample ? sample.apiKey : 'rl_yourkey';
-    $('#admin-embed-code').textContent = `<script src="${window.location.origin}/relay-plugin.js"\n  data-vendor="${vendorId}"\n  data-key="${vendorKey}"></script>\n\n<button data-relay-checkout\n  data-item="Example Product"\n  data-amount="49.00"\n  data-rail="stripe">\n  Pay now\n</button>`;
+    $('#admin-embed-code').textContent = `<script src="${window.location.origin}/relay-plugin.js"\n  data-vendor="${vendorId}"\n  data-key="${vendorKey}"></script>\n\n<button data-relay-checkout\n  data-item="Product name"\n  data-amount="49.00"\n  data-rail="stripe">\n  Pay now\n</button>`;
   }
 
   // ------------------------------------------------------------------------
@@ -592,8 +629,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="mono" style="font-size:0.74rem;">${u.expiresAt ? new Date(u.expiresAt).toLocaleDateString() : 'Never'}</td>
         <td>${u.active ? '<span class="badge badge--green">Active</span>' : '<span class="badge badge--red">Revoked</span>'}</td>
         <td class="actions-cell">
-          ${u.tempPasswordHint ? `<button class="btn btn--secondary btn--xs" data-copy-cred="${esc(u.email + ' / ' + u.tempPasswordHint)}">Copy</button>` : ''}
-          ${u.active && u.id !== state.user.id ? `<button class="btn btn--danger btn--xs" data-revoke-login="${esc(u.id)}">Revoke</button>` : ''}
+          <div class="row-actions">
+            ${u.tempPasswordHint ? `<button class="btn btn--secondary btn--xs" data-copy-cred="${esc(u.email + ' / ' + u.tempPasswordHint)}">Copy</button>` : ''}
+            ${u.active && u.id !== state.user.id ? `<button class="btn btn--danger btn--xs" data-revoke-login="${esc(u.id)}">Revoke</button>` : ''}
+          </div>
         </td>
       </tr>
     `).join('');
@@ -684,19 +723,6 @@ document.addEventListener('DOMContentLoaded', () => {
       refreshOverview();
     }
   });
-
-  function tickClock() {
-    const clock = $('#welcome-clock');
-    if (!clock) return;
-    clock.textContent = new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZone: 'America/New_York'
-    }).format(new Date());
-  }
-
-  tickClock();
-  setInterval(tickClock, 30000);
 
   async function initDashboard() {
     try {

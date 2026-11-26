@@ -126,7 +126,6 @@
               <div class="welcome-kicker">Relay desk</div>
               <h2 id="welcome-title">Overview</h2>
               <p id="welcome-sub">Sales, fees, and crypto cashouts.</p>
-              <div class="welcome-clock" id="welcome-clock">—</div>
             </article>
             <article class="panel mix-card">
               <div class="panel-head">
@@ -214,10 +213,11 @@
         <section class="view" id="view-orders">
           <div class="panel">
             <div class="panel-head">
-              <span class="panel-title">All Transactions &amp; Webhook Logs</span>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <input type="text" id="orders-search" class="input" style="width:220px; height:32px;" placeholder="Filter order, vendor, email..." />
-              </div>
+              <span class="panel-title">Transactions</span>
+              <label class="table-search">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                <input type="text" id="orders-search" placeholder="Search orders" />
+              </label>
             </div>
             <div class="table-wrap">
               <table>

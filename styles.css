@@ -401,6 +401,17 @@ svg { display: block; }
 .sandbox-store-sub { font-size: 0.75rem; color: var(--text-subtle); font-family: var(--font-mono); }
 .sandbox-price { font-size: 1.375rem; font-weight: 700; color: var(--accent-text); font-family: var(--font-mono); }
 
+.amount-field { position: relative; }
+.amount-field > span {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9aa6b8;
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+
 .sandbox-methods {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -409,7 +420,12 @@ svg { display: block; }
 }
 
 .sandbox-method {
-  padding: 10px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   background: rgba(255, 255, 255, 0.02);
@@ -418,6 +434,9 @@ svg { display: block; }
   color: var(--text-muted);
   transition: all 150ms var(--ease);
 }
+
+.pay-mark { width: 18px; height: 18px; display: block; flex-shrink: 0; }
+.pay-mark--wide { width: 22px; height: 22px; }
 
 .sandbox-method.is-active {
   color: #fff;
@@ -496,6 +515,7 @@ svg { display: block; }
   font-size: 0.875rem;
   transition: border-color 150ms var(--ease);
 }
+.input.amount-input { padding-left: 28px; }
 
 .textarea { height: auto; min-height: 80px; padding: 10px 12px; resize: vertical; }
 .input:focus, .select:focus, .textarea:focus { outline: none; border-color: var(--accent); }

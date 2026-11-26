@@ -59,9 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
   sbPayBtn?.addEventListener('click', () => {
     const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
     const email = $('#sb-email')?.value?.trim() || 'customer@email.com';
-    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'card';
+    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'Stripe';
     if (sbConsole) {
-      sbConsole.innerHTML = `<div><strong>Example Product</strong> · ${formatUSD(amountUsd)} via ${railLabel}</div><div>${email} would continue to checkout on a vendor site.</div>`;
+      sbConsole.innerHTML = `<div><strong>${formatUSD(amountUsd)}</strong> via ${railLabel}</div><div>${email} continues to checkout.</div>`;
     }
   });
 
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const codeTabs = {
     embed: {
       title: 'Zero PCI burden on the vendor',
-      desc: 'Your vendor adds two lines of HTML onto any product page. Clicking the button invokes RelayCheckout.open(), calling your Relay backend to create a Stripe Checkout or PayPal session.',
+      desc: 'The vendor adds the script and a buy button. The button opens checkout, Relay creates the Stripe or PayPal session, and the customer pays there.',
       code: `<!-- 1. Include Relay once on the vendor website -->
 <script src="${window.location.origin}/relay-plugin.js"
   data-vendor="vnd_yourid"
@@ -98,15 +98,15 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- 2. Attach checkout to the product button -->
 <button
   data-relay-checkout
-  data-item="Example Product"
+  data-item="Product name"
   data-amount="49.00"
   data-rail="stripe">
   Pay now
 </button>`
     },
     backend: {
-      title: 'Your server holds the Stripe Secret Key',
-      desc: 'Relay calls the official Stripe Node SDK on your server, tagging each Checkout Session with the vendor ID, calculated commission, and net vendor payout so accounting is automatic.',
+      title: 'Relay creates the Checkout session',
+      desc: 'Relay calls Stripe with the platform key, tags the session with the vendor, the fee, and the vendor net, then sends the customer to Stripe.',
       code: `// server.js — POST /api/stripe/create-checkout-session
 const session = await stripe.checkout.sessions.create({
   mode: 'payment',

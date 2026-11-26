@@ -88,39 +88,49 @@
             </div>
 
             <div class="hero-rails-row">
-              <span class="rail-tag"><span class="rail-tag-dot" style="background:#10b981;"></span>Stripe Cards</span>
-              <span class="rail-tag"><span class="rail-tag-dot" style="background:#38bdf8;"></span>PayPal Express</span>
-              <span class="rail-tag"><span class="rail-tag-dot" style="background:#a78bfa;"></span>Apple &amp; Google Pay</span>
-              <span class="rail-tag"><span class="rail-tag-dot" style="background:#f59e0b;"></span>USDT &amp; BTC cashouts</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#10b981;"></span>Stripe</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#38bdf8;"></span>PayPal</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#a78bfa;"></span>Apple Pay &amp; Google Pay</span>
+              <span class="rail-tag"><span class="rail-tag-dot" style="background:#f59e0b;"></span>crypto cashouts</span>
             </div>
           </div>
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
-          <div class="sandbox-card" aria-label="Example Relay checkout">
+          <div class="sandbox-card" aria-label="Relay checkout">
             <div class="sandbox-top">
               <span class="sandbox-title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
                 Checkout
               </span>
-              <span class="mode-badge" id="stripe-mode-badge">EXAMPLE</span>
             </div>
             <div class="sandbox-body">
               <div class="sandbox-store-row">
                 <div>
-                  <div class="sandbox-store-name" id="sb-item-label">Example Product</div>
-                  <div class="sandbox-store-sub">yourstore.com</div>
+                  <div class="sandbox-store-name" id="sb-item-label">Checkout</div>
+                  <div class="sandbox-store-sub">Stripe, PayPal, Apple Pay, Google Pay</div>
                 </div>
                 <div class="sandbox-price" id="sb-price-display">$49.00</div>
               </div>
-              <div class="sandbox-methods" role="tablist" aria-label="Choose payment rail">
-                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe Card</button>
-                <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
-                <button type="button" class="sandbox-method" data-sb-rail="wallets">Apple / GPay</button>
+              <div class="sandbox-methods" role="tablist" aria-label="Choose payment method">
+                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe" aria-label="Stripe">
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#635bff"/><path fill="#fff" d="M11.1 9.55c0-.55.48-.82 1.28-.82 1.08 0 2.44.34 3.5.94V7.55c-1.16-.5-2.32-.74-3.5-.74-2.86 0-4.76 1.5-4.76 4 0 3.9 5.28 3.28 5.28 4.96 0 .68-.58.96-1.4.96-1.22 0-2.78-.5-3.96-1.18v2.2c1.32.56 2.66.86 3.96.86 2.94 0 4.96-1.46 4.96-4.04 0-4.2-5.36-3.46-5.36-5.02z"/></svg>
+                  <span>Stripe</span>
+                </button>
+                <button type="button" class="sandbox-method" data-sb-rail="paypal" aria-label="PayPal">
+                  <svg class="pay-mark pay-mark--wide" viewBox="0 0 24 24" aria-hidden="true"><path fill="#003087" d="M7.08 21.34H2.47a.64.64 0 0 1-.63-.74L4.94.9A.7.7 0 0 1 6 0h7.46c2.57 0 4.58.54 5.69 1.81 1.01 1.15 1.3 2.42 1.01 4.29-.02.14-.06.29-.1.44-.98 5.05-4.35 6.8-8.65 6.8H9.22a.69.69 0 0 0-.68.58l-1.12 7.1a.56.56 0 0 1-.55.45l.21-.13z"/><path fill="#009cde" d="M19.2 6.9a3.3 3.3 0 0 0-.6-.54c-.02.08-.03.18-.05.26-.59 3.02-2.56 6.08-8.56 6.08H7.83a.9.9 0 0 0-.9.9l-1.12 7.1-.5 3.1a.5.5 0 0 0 .5.6h3.47a.8.8 0 0 0 .8-.7l.03-.2.6-3.8.04-.2a.8.8 0 0 1 .8-.7h.5c3.26 0 5.81-1.32 6.55-5.15.31-1.6.15-2.93-.64-3.87a2.7 2.7 0 0 0-.77-.68z"/></svg>
+                </button>
+                <button type="button" class="sandbox-method" data-sb-rail="wallets" aria-label="Apple Pay and Google Pay">
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#f5f5f7" d="M16.37 12.72c-.03-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.48.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.78 2.29-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.6-.74 3-.74s1.8.74 3.02.72c1.25-.02 2.03-1.13 2.79-2.25.88-1.28 1.24-2.52 1.26-2.58-.03-.01-2.42-.93-2.48-3.74zM14.7 6.3c.64-.77 1.07-1.85.95-2.92-.92.04-2.03.61-2.69 1.38-.59.68-1.1 1.77-.96 2.81 1.02.08 2.06-.52 2.7-1.27z"/></svg>
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.68-.06-1.34-.17-1.96H12v3.71h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.23c1.89-1.74 2.99-4.3 2.99-7.27z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.61-2.42l-3.23-2.5c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.58A10 10 0 0 0 12 22z"/><path fill="#FBBC05" d="M6.41 13.92A6 6 0 0 1 6.1 12c0-.67.11-1.31.31-1.92V7.5H3.07a10 10 0 0 0 0 9l3.34-2.58z"/><path fill="#EA4335" d="M12 5.96c1.47 0 2.79.5 3.83 1.5l2.87-2.87C16.95 2.96 14.7 2 12 2A10 10 0 0 0 3.07 7.5l3.34 2.58c.79-2.36 2.99-4.12 5.59-4.12z"/></svg>
+                </button>
               </div>
               <div class="sandbox-inputs">
                 <div>
                   <label class="field-label" for="sb-amount">Amount (USD)</label>
-                  <input type="number" id="sb-amount" class="input" value="49" min="1" max="50000" />
+                  <div class="amount-field">
+                    <span aria-hidden="true">$</span>
+                    <input type="number" id="sb-amount" class="input amount-input" value="49" min="1" max="50000" />
+                  </div>
                 </div>
                 <div>
                   <label class="field-label" for="sb-email">Customer Email</label>
@@ -129,7 +139,7 @@
               </div>
               <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">Pay $49.00</button>
               <div class="sandbox-console" id="sb-console">
-                <div>Example Product is ready. Choose a rail, then press pay. The result stays in this card.</div>
+                <div>Choose Stripe, PayPal, Apple Pay, or Google Pay, then press pay.</div>
               </div>
             </div>
           </div>
@@ -144,9 +154,9 @@
       <div class="container">
         <div class="section-head">
           <span class="kicker">How the Stripe plugin works</span>
-          <h2 class="section-title">One drop-in script connects your vendor's site to your Stripe &amp; PayPal backend</h2>
+          <h2 class="section-title">One script on the product page opens Stripe or PayPal</h2>
           <p class="section-lead">
-            Vendors never touch Stripe keys or PCI card fields. They embed <code>relay-plugin.js</code>, your Relay backend creates the real Stripe Checkout session, and verified webhooks handle order fulfillment and payout accounting automatically.
+            A vendor pastes <code>relay-plugin.js</code> on a product page and never handles card numbers or Stripe keys. Relay creates the Checkout session, Stripe confirms the payment, and the webhook records the order and the vendor’s crypto cashout.
           </p>
         </div>
 
@@ -159,7 +169,7 @@
           <div class="flow-node">
             <div class="flow-step">STEP 02</div>
             <div class="flow-title">Relay creates Stripe session</div>
-            <p class="flow-desc">Your Node server calls <code>stripe.checkout.sessions.create()</code> using your Stripe secret key and attaches vendor metadata.</p>
+            <p class="flow-desc">Relay creates the Stripe Checkout session for that vendor and sends the customer to Stripe.</p>
           </div>
           <div class="flow-node">
             <div class="flow-step">STEP 03</div>
@@ -169,7 +179,7 @@
           <div class="flow-node">
             <div class="flow-step">STEP 04</div>
             <div class="flow-title">Commission &amp; vendor payout</div>
-            <p class="flow-desc">Relay deducts your commission, notifies the vendor's store to fulfill, and queues their net payout in Admin.</p>
+            <p class="flow-desc">Relay keeps its fee, marks the order paid, and adds the vendor’s net to their crypto cashout balance.</p>
           </div>
         </div>
 
@@ -191,7 +201,7 @@
               <div>
                 <h4 id="code-aside-title">Zero PCI burden on the vendor</h4>
                 <p id="code-aside-desc">
-                  Your vendor only drops two lines of HTML onto their storefront. Clicking the button automatically invokes <code>window.RelayCheckout.open()</code> and routes payment through your Stripe or PayPal gateway.
+                  The vendor adds the script and a buy button. The button opens checkout, Relay creates the Stripe or PayPal session, and the customer pays there.
                 </p>
               </div>
               <button type="button" class="btn btn--secondary btn--full" data-open-apply>Generate a vendor embed key</button>

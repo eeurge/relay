@@ -36,7 +36,7 @@ Routing other people's payments through one Stripe account needs Stripe Connect 
 
 ```html
 <script src="https://yourdomain.com/relay-plugin.js" data-vendor="vnd_yourid" data-key="rl_yourkey"></script>
-<button data-relay-checkout data-item="Example Product" data-amount="49.00" data-rail="stripe">Pay now</button>
+<button data-relay-checkout data-item="Product name" data-amount="49.00" data-rail="stripe">Pay now</button>
 ```
 
 A click calls Relay, Relay opens Stripe Checkout when the keys are set, and the paid order shows up under Admin → Transactions. The vendor's net amount waits under Payout Queue until you mark it paid.
