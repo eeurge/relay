@@ -10,7 +10,7 @@ copy .env.example .env
 npm start
 ```
 
-Open http://127.0.0.1:8080 . Admin is http://127.0.0.1:8080/admin.html .
+Open http://127.0.0.1:8080 . Sign in is http://127.0.0.1:8080/login .
 
 Founder: `admin@relay.dev` / `RelayAdmin!2026`  
 Partner: `partner@relay.dev` / `RelayPartner!2026`

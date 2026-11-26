@@ -937,6 +937,15 @@ app.get('/api/health', (_req, res) => {
 });
 
 // Serve static frontend files
+function sendDesk(res) {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+}
+
+app.get(['/login', '/dashboard'], (_req, res) => sendDesk(res));
+app.get(['/admin', '/admin.html'], (req, res) => {
+  res.redirect(getSessionUser(req) ? '/dashboard' : '/login');
+});
+
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 app.listen(PORT, '0.0.0.0', () => {

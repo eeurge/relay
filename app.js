@@ -459,7 +459,7 @@ if (event.type === 'checkout.session.completed') {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Sign in failed');
-      window.location.href = '/admin.html';
+      window.location.href = '/dashboard';
     } catch (err) {
       errEl.textContent = err.message;
       errEl.hidden = false;
@@ -482,7 +482,7 @@ if (event.type === 'checkout.session.completed') {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not create the account');
-      window.location.href = '/admin.html';
+      window.location.href = '/dashboard';
     } catch (err) {
       errEl.textContent = err.message;
       errEl.hidden = false;

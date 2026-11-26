@@ -76,11 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function showDeskPath(path) {
+    if (location.pathname !== path) history.replaceState({}, '', path);
+  }
+
   async function signOut() {
     closeAccountMenu();
     await fetch('/api/auth/logout', { method: 'POST' });
     $('#app-shell').hidden = true;
     $('#auth-gate').hidden = false;
+    showDeskPath('/login');
     showToast('Signed out.');
   }
 
@@ -740,8 +745,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!me.authenticated) {
         $('#app-shell').hidden = true;
         $('#auth-gate').hidden = false;
+        showDeskPath('/login');
         return;
       }
+      showDeskPath('/dashboard');
     } catch {
       return;
     }
