@@ -730,6 +730,8 @@ svg { display: block; }
 
 .code-aside h4 { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
 .code-aside p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
+.plugin-pay { display: flex; flex-direction: column; gap: 10px; }
+.plugin-pay-status { min-height: 1.1em; font-size: 0.8rem; color: var(--text-muted); }
 
 /* ==========================================================================
    Asymmetric Bento Capabilities Grid

@@ -204,7 +204,11 @@
                   The vendor adds the script and a buy button. The button opens checkout, Relay creates the Stripe or PayPal session, and the customer pays there.
                 </p>
               </div>
-              <button type="button" class="btn btn--secondary btn--full" data-open-apply>Generate a vendor embed key</button>
+              <div class="plugin-pay">
+                <button type="button" class="btn btn--primary btn--full" id="plugin-stripe-pay">Pay with Stripe</button>
+                <p id="plugin-stripe-status" class="plugin-pay-status"></p>
+                <button type="button" class="btn btn--secondary btn--full" data-open-apply>Generate a vendor embed key</button>
+              </div>
             </div>
           </div>
         </div>

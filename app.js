@@ -56,13 +56,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  async function openStripeCheckout({ amountUsd, email, item, rail, button, status }) {
+    if (button) button.disabled = true;
+    if (status) status.textContent = 'Opening Stripe…';
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendorId: 'vnd_vendor',
+          item,
+          amountUsd,
+          rail,
+          customerEmail: email
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Stripe checkout failed');
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      if (status) status.textContent = `${formatUSD(amountUsd)} recorded. Stripe did not return a checkout page.`;
+    } catch (err) {
+      if (status) status.textContent = err.message || 'Stripe checkout failed';
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   sbPayBtn?.addEventListener('click', () => {
     const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
     const email = $('#sb-email')?.value?.trim() || 'customer@email.com';
-    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'Stripe';
-    if (sbConsole) {
-      sbConsole.innerHTML = `<div><strong>${formatUSD(amountUsd)}</strong> via ${railLabel}</div><div>${email} continues to checkout.</div>`;
+    if (sbRail === 'stripe') {
+      openStripeCheckout({
+        amountUsd,
+        email,
+        item: 'Checkout',
+        rail: 'stripe',
+        button: sbPayBtn,
+        status: sbConsole
+      });
+      return;
     }
+    const railLabel = sbRail === 'paypal' ? 'PayPal' : 'Apple Pay or Google Pay';
+    if (sbConsole) {
+      sbConsole.textContent = `${formatUSD(amountUsd)} via ${railLabel}. ${email} continues to checkout.`;
+    }
+  });
+
+  $('#plugin-stripe-pay')?.addEventListener('click', () => {
+    openStripeCheckout({
+      amountUsd: 49,
+      email: 'customer@email.com',
+      item: 'Product name',
+      rail: 'stripe',
+      button: $('#plugin-stripe-pay'),
+      status: $('#plugin-stripe-status')
+    });
   });
 
   // ------------------------------------------------------------------------
@@ -110,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
       code: `// server.js — POST /api/stripe/create-checkout-session
 const session = await stripe.checkout.sessions.create({
   mode: 'payment',
-  payment_method_types: ['card'],
   line_items: [{
     quantity: 1,
     price_data: {
