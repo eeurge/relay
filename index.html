@@ -97,17 +97,11 @@
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
           <div class="sandbox-card" aria-label="Relay checkout">
-            <div class="sandbox-top">
-              <span class="sandbox-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
-                Checkout
-              </span>
-            </div>
             <div class="sandbox-body">
-              <div class="sandbox-store-row">
+              <div class="checkout-head">
                 <div>
-                  <div class="sandbox-store-name" id="sb-item-label">Checkout</div>
-                  <div class="sandbox-store-sub">Stripe, PayPal, Apple Pay, Google Pay</div>
+                  <div class="checkout-kicker">Checkout</div>
+                  <div class="sandbox-store-name" id="sb-item-label">Stripe</div>
                 </div>
                 <div class="sandbox-price" id="sb-price-display">$49.00</div>
               </div>
@@ -133,14 +127,12 @@
                   </div>
                 </div>
                 <div>
-                  <label class="field-label" for="sb-email">Customer Email</label>
-                  <input type="email" id="sb-email" class="input" placeholder="name@email.com" autocomplete="email" />
+                  <label class="field-label" for="sb-email">Email</label>
+                  <input type="email" id="sb-email" class="input" placeholder="you@email.com" autocomplete="email" />
                 </div>
               </div>
               <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">Pay $49.00</button>
-              <div class="sandbox-console" id="sb-console">
-                <div>Choose Stripe, PayPal, Apple Pay, or Google Pay, then press pay.</div>
-              </div>
+              <div class="sandbox-console" id="sb-console">Card details open on Stripe.</div>
             </div>
           </div>
         </div>

@@ -53,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       sbRail = btn.dataset.sbRail;
       $$('[data-sb-rail]').forEach((item) => item.classList.toggle('is-active', item === btn));
+      const label = $('#sb-item-label');
+      if (label) label.textContent = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Wallets' : 'Stripe';
     });
   });
 
