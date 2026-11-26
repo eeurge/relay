@@ -14,7 +14,11 @@ if (fs.existsSync(envPath)) {
     if (eq === -1) continue;
     const key = trimmed.slice(0, eq).trim();
     const val = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, '');
-    if (key && !(key in process.env)) process.env[key] = val;
+    if (!key) continue;
+    const current = process.env[key];
+    const fileIsReal = Boolean(val) && !val.includes('replace_me');
+    const currentIsReal = Boolean(current && String(current).trim()) && !String(current).includes('replace_me');
+    if (fileIsReal || !currentIsReal) process.env[key] = val;
   }
 }
 
@@ -830,5 +834,6 @@ app.get('/api/health', (_req, res) => {
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Relay server listening at ${BASE_URL} (Stripe ${hasRealStripeKey ? 'connected' : 'not connected'})`);
+  const stripeMode = !hasRealStripeKey ? 'sandbox' : (STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test');
+  console.log(`Relay server listening at ${BASE_URL} (Stripe mode: ${stripeMode})`);
 });
