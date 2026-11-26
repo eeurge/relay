@@ -105,19 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  $('#plugin-stripe-pay')?.addEventListener('click', () => {
-    const amountUsd = Math.max(1, Number($('#plugin-amount')?.value) || 49);
-    const email = $('#plugin-email')?.value?.trim() || '';
-    openStripeCheckout({
-      amountUsd,
-      email,
-      item: 'Product name',
-      rail: 'stripe',
-      button: $('#plugin-stripe-pay'),
-      status: $('#plugin-stripe-status')
-    });
-  });
-
   const checkoutParams = new URLSearchParams(window.location.search);
   if (checkoutParams.get('checkout') === 'success' && checkoutParams.get('order')) {
     const orderId = checkoutParams.get('order');
