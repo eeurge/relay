@@ -76,12 +76,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  $('#logout-btn')?.addEventListener('click', async () => {
+  async function signOut() {
+    closeAccountMenu();
     await fetch('/api/auth/logout', { method: 'POST' });
     $('#app-shell').hidden = true;
     $('#auth-gate').hidden = false;
     showToast('Signed out.');
+  }
+
+  function closeAccountMenu() {
+    const menu = $('#account-drop');
+    const button = $('#account-btn');
+    if (menu) menu.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  $('#account-btn')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const menu = $('#account-drop');
+    const open = menu.hidden;
+    menu.hidden = !open;
+    $('#account-btn').setAttribute('aria-expanded', String(open));
   });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.account-menu')) closeAccountMenu();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAccountMenu();
+  });
+  $('#account-settings')?.addEventListener('click', () => {
+    closeAccountMenu();
+    switchView('settings');
+  });
+  $('#account-switch')?.addEventListener('click', signOut);
+  $('#account-logout')?.addEventListener('click', signOut);
+  $('#logout-btn')?.addEventListener('click', signOut);
 
   // ------------------------------------------------------------------------
   // Navigation Tabs
@@ -174,7 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#kpi-vendors-label').textContent = isAdmin ? 'Vendors' : 'Orders';
 
     const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';
-    $('#sidebar-stripe-mode').textContent = modeBadgeText;
+    if ($('#sidebar-stripe-mode')) $('#sidebar-stripe-mode').textContent = modeBadgeText;
+    const settingsItem = $('#account-settings');
+    if (settingsItem) settingsItem.hidden = !isAdmin;
     if ($('#diag-mode-badge')) $('#diag-mode-badge').textContent = modeBadgeText;
     if ($('#mix-mode-badge')) $('#mix-mode-badge').textContent = modeBadgeText;
 

@@ -53,7 +53,7 @@
   <div class="app-shell" id="app-shell" hidden>
     <aside class="sidebar">
       <div>
-        <a href="/" class="brand side-brand">
+        <a href="/#top" class="brand side-brand">
           <span class="brand-mark">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 9h12l-3-3M19 15H7l3 3" /></svg>
           </span>
@@ -108,12 +108,17 @@
       <header class="topbar">
         <div class="crumb">Dashboard <span>/</span> <strong id="topbar-title">Overview</strong></div>
         <div class="topbar-right">
-          <span class="badge badge--green" id="sidebar-stripe-mode">NOT CONNECTED</span>
           <button type="button" class="btn btn--secondary btn--xs" id="admin-test-checkout-btn">Preview checkout</button>
-          <a href="/" class="btn btn--secondary btn--xs">Live site</a>
-          <div class="user-pill">
-            <span class="user-avatar" id="user-avatar">R</span>
-            <span id="cur-user-name">Relay</span>
+          <div class="account-menu">
+            <button type="button" class="user-pill" id="account-btn" aria-expanded="false" aria-haspopup="menu">
+              <span class="user-avatar" id="user-avatar">R</span>
+              <span id="cur-user-name">Relay</span>
+            </button>
+            <div class="account-drop" id="account-drop" role="menu" hidden>
+              <button type="button" role="menuitem" id="account-settings">Settings</button>
+              <button type="button" role="menuitem" id="account-switch">Change account</button>
+              <button type="button" role="menuitem" id="account-logout">Sign out</button>
+            </div>
           </div>
         </div>
       </header>
@@ -130,7 +135,6 @@
             <article class="panel mix-card">
               <div class="panel-head">
                 <span class="panel-title">Payment mix</span>
-                <span class="badge badge--green" id="mix-mode-badge">NOT CONNECTED</span>
               </div>
               <div class="mix-body" id="rail-mix"></div>
             </article>
