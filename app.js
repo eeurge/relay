@@ -116,9 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
       .then((res) => res.json())
       .then((data) => {
         const paid = data.order?.status === 'paid' || data.paymentStatus === 'paid';
-        const message = paid
-          ? `${orderId} was paid and sent to your Stripe account.`
-          : `${orderId} is waiting on Stripe.`;
+        const message = data.order?.rail === 'paypal'
+          ? `${orderId} was sent to PayPal.`
+          : paid
+            ? `${orderId} was paid and sent to your Stripe account.`
+            : `${orderId} is waiting on Stripe.`;
         if (sbConsole) sbConsole.textContent = message;
         const pluginStatus = $('#plugin-stripe-status');
         if (pluginStatus) pluginStatus.textContent = message;

@@ -27,6 +27,7 @@ const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${PORT}`;
 const STRIPE_SECRET_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
 const STRIPE_PUBLISHABLE_KEY = (process.env.STRIPE_PUBLISHABLE_KEY || '').trim();
 const STRIPE_WEBHOOK_SECRET = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
+const PAYPAL_BUSINESS_EMAIL = (process.env.PAYPAL_BUSINESS_EMAIL || 'eurgeee@gmail.com').trim();
 
 const hasRealStripeKey =
   Boolean(STRIPE_SECRET_KEY) &&
@@ -377,8 +378,46 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
     const { effectivePct, fee, net } = calculateCommission(gross, safeRail, vendor?.rate);
     const orderId = `RL-${Math.floor(8500 + Math.random() * 1499)}`;
 
-    // Stripe Checkout hosts card, Apple Pay, and Google Pay. PayPal uses the same page when that method is turned on.
-    if (stripe && (safeRail === 'stripe' || safeRail === 'wallets' || safeRail === 'paypal')) {
+    if (safeRail === 'paypal') {
+      const paypalParams = new URLSearchParams({
+        cmd: '_xclick',
+        business: PAYPAL_BUSINESS_EMAIL,
+        item_name: String(item).slice(0, 120),
+        amount: gross.toFixed(2),
+        currency_code: 'USD',
+        invoice: orderId,
+        custom: orderId,
+        return: `${BASE_URL}/?checkout=success&order=${orderId}&rail=paypal`,
+        cancel_return: `${BASE_URL}/?checkout=canceled&order=${orderId}`,
+        no_shipping: '1',
+        charset: 'utf-8'
+      });
+      const order = {
+        id: orderId,
+        vendorId: vendor ? vendor.id : 'vnd_custom',
+        vendorName: vendor ? vendor.name : 'Vendor',
+        item: String(item).slice(0, 120),
+        customerEmail: String(customerEmail).slice(0, 120),
+        rail: 'paypal',
+        gross,
+        fee,
+        net,
+        status: 'pending_payment',
+        webhookStatus: 'Waiting on PayPal',
+        stripeRef: `pp_${orderId}`,
+        createdAt: new Date().toISOString()
+      };
+      store.orders.unshift(order);
+      saveStore(store);
+      return res.json({
+        mode: 'paypal',
+        checkoutUrl: `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`,
+        order
+      });
+    }
+
+    // Stripe Checkout hosts the card form. Apple Pay and Google Pay appear on that page when the browser has them.
+    if (stripe && (safeRail === 'stripe' || safeRail === 'wallets')) {
       const sessionParams = {
         mode: 'payment',
         line_items: [
@@ -403,16 +442,12 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
         success_url: `${BASE_URL}/?checkout=success&order=${orderId}`,
         cancel_url: `${BASE_URL}/?checkout=canceled&order=${orderId}`
       };
-      if (safeRail === 'paypal') sessionParams.allowed_payment_method_types = ['paypal'];
 
       let session;
       try {
         session = await stripe.checkout.sessions.create(sessionParams);
       } catch (err) {
-        const message = safeRail === 'paypal'
-          ? 'PayPal is not turned on for this Stripe account. In the Stripe Dashboard, open Settings, then Payment methods, and turn PayPal on.'
-          : (err.message || 'Stripe checkout failed');
-        return res.status(400).json({ error: message });
+        return res.status(400).json({ error: err.message || 'Stripe checkout failed' });
       }
 
       const order = {
