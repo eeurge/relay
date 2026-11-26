@@ -60,7 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function openStripeCheckout({ amountUsd, email, item, rail, button, status }) {
     if (button) button.disabled = true;
-    if (status) status.textContent = 'Opening Stripe…';
+    const opening = rail === 'paypal'
+      ? 'Opening PayPal…'
+      : rail === 'wallets'
+        ? 'Opening Apple Pay and Google Pay…'
+        : 'Opening Stripe…';
+    if (status) status.textContent = opening;
     try {
       const res = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',
@@ -79,7 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = data.checkoutUrl;
         return;
       }
-      if (status) status.textContent = `${formatUSD(amountUsd)} recorded. Stripe did not return a checkout page.`;
+      if (status) {
+        status.textContent = rail === 'paypal'
+          ? 'PayPal is not turned on for this Stripe account yet. Stripe, Apple Pay, and Google Pay open checkout now.'
+          : 'Checkout did not open.';
+      }
     } catch (err) {
       if (status) status.textContent = err.message || 'Stripe checkout failed';
     } finally {
@@ -90,21 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
   sbPayBtn?.addEventListener('click', () => {
     const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
     const email = $('#sb-email')?.value?.trim() || '';
-    if (sbRail === 'stripe') {
-      openStripeCheckout({
-        amountUsd,
-        email,
-        item: 'Checkout',
-        rail: 'stripe',
-        button: sbPayBtn,
-        status: sbConsole
-      });
-      return;
-    }
-    const railLabel = sbRail === 'paypal' ? 'PayPal' : 'Apple Pay or Google Pay';
-    if (sbConsole) {
-      sbConsole.textContent = `${formatUSD(amountUsd)} via ${railLabel}. Stripe is the live payment option.`;
-    }
+    openStripeCheckout({
+      amountUsd,
+      email,
+      item: 'Checkout',
+      rail: sbRail,
+      button: sbPayBtn,
+      status: sbConsole
+    });
   });
 
   const checkoutParams = new URLSearchParams(window.location.search);

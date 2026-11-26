@@ -377,9 +377,9 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
     const { effectivePct, fee, net } = calculateCommission(gross, safeRail, vendor?.rate);
     const orderId = `RL-${Math.floor(8500 + Math.random() * 1499)}`;
 
-    // Real Stripe Checkout when STRIPE_SECRET_KEY is configured and rail uses Stripe
-    if (stripe && (safeRail === 'stripe' || safeRail === 'wallets')) {
-      const session = await stripe.checkout.sessions.create({
+    // Stripe Checkout hosts card, Apple Pay, and Google Pay. PayPal uses the same page when that method is turned on.
+    if (stripe && (safeRail === 'stripe' || safeRail === 'wallets' || safeRail === 'paypal')) {
+      const sessionParams = {
         mode: 'payment',
         line_items: [
           {
@@ -402,7 +402,18 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
         },
         success_url: `${BASE_URL}/?checkout=success&order=${orderId}`,
         cancel_url: `${BASE_URL}/?checkout=canceled&order=${orderId}`
-      });
+      };
+      if (safeRail === 'paypal') sessionParams.allowed_payment_method_types = ['paypal'];
+
+      let session;
+      try {
+        session = await stripe.checkout.sessions.create(sessionParams);
+      } catch (err) {
+        const message = safeRail === 'paypal'
+          ? 'PayPal is not turned on for this Stripe account. In the Stripe Dashboard, open Settings, then Payment methods, and turn PayPal on.'
+          : (err.message || 'Stripe checkout failed');
+        return res.status(400).json({ error: message });
+      }
 
       const order = {
         id: orderId,
