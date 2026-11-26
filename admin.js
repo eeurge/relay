@@ -145,7 +145,22 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#cur-user-meta').textContent = state.user.email;
     $('#nav-logins').hidden = !isAdmin;
     $('#nav-settings').hidden = !isAdmin;
+    $('#nav-vendors').hidden = !isAdmin;
+    $('#nav-control').hidden = !isAdmin;
+    $('#nav-control-label').hidden = !isAdmin;
     $('#add-vendor-panel').hidden = !isAdmin;
+    $('#admin-test-checkout-btn').hidden = !isAdmin;
+    $('#rails-panel').hidden = !isAdmin;
+    $('#overview-split').style.gridTemplateColumns = isAdmin ? '' : '1fr';
+    $('#nav-payouts-label').textContent = isAdmin ? 'Payout Queue' : 'Cashouts';
+    $('#chart-title').textContent = isAdmin ? '7-Day Processing Volume' : '7-Day Sales';
+    $('#kpi-gross-label').textContent = isAdmin ? 'Gross Processed Volume' : 'Your Sales';
+    $('#kpi-gross-sub').textContent = isAdmin ? 'Across Stripe, PayPal & Wallets' : 'Paid through your checkout';
+    $('#kpi-net-label').textContent = isAdmin ? 'Relay Net Commission' : 'Relay Fee';
+    $('#kpi-net-sub').textContent = isAdmin ? 'Earned platform margin' : 'Taken from your sales';
+    $('#kpi-pending-label').textContent = isAdmin ? 'Pending Vendor Payouts' : 'Ready to Cash Out';
+    $('#kpi-pending-sub').textContent = 'USDT / BTC';
+    $('#kpi-vendors-label').textContent = isAdmin ? 'Active Vendors' : 'Orders';
 
     const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';
     $('#sidebar-stripe-mode').textContent = modeBadgeText;
@@ -160,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#kpi-gross').textContent = usd(state.kpis.grossVolume);
     $('#kpi-net').textContent = usd(state.kpis.netRevenue);
     $('#kpi-pending').textContent = usd(state.kpis.pendingPayouts);
-    $('#kpi-vendors').textContent = String(state.kpis.activeVendors);
-    $('#kpi-vendors-sub').textContent = `${state.kpis.pendingVendors} pending review`;
+    $('#kpi-vendors').textContent = isAdmin ? String(state.kpis.activeVendors) : String(state.orders.length);
+    $('#kpi-vendors-sub').textContent = isAdmin ? `${state.kpis.pendingVendors} pending review` : 'On your ledger';
 
     renderChart();
     renderQuickRails(isAdmin);
@@ -174,17 +189,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderChart() {
-    const max = Math.max(...state.chart7d.map((d) => d.volume), 100);
-    $('#volume-chart').innerHTML = state.chart7d.map((d) => {
-      const pct = Math.max(10, Math.round((d.volume / max) * 100));
-      return `
-        <div class="chart-col">
-          <span class="chart-val">$${(d.volume / 1000).toFixed(1)}k</span>
-          <div class="chart-bar-wrap"><div class="chart-bar" style="height:${pct}%;"></div></div>
-          <span class="chart-day">${esc(d.day)}</span>
-        </div>
-      `;
+    const data = state.chart7d.length ? state.chart7d : [{ day: 'Today', volume: 0 }];
+    const width = 680;
+    const height = 240;
+    const pad = { l: 44, r: 16, t: 22, b: 32 };
+    const max = Math.max(...data.map((point) => point.volume), 1);
+    const innerW = width - pad.l - pad.r;
+    const innerH = height - pad.t - pad.b;
+    const points = data.map((point, index) => {
+      const x = pad.l + (data.length === 1 ? innerW / 2 : (index / (data.length - 1)) * innerW);
+      const y = pad.t + innerH - (point.volume / max) * (innerH - 8);
+      return { ...point, x, y };
+    });
+    const line = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
+    const area = `${line} L${points[points.length - 1].x.toFixed(1)},${pad.t + innerH} L${points[0].x.toFixed(1)},${pad.t + innerH} Z`;
+    const grid = [0, 0.5, 1].map((step) => {
+      const y = pad.t + innerH - step * (innerH - 8);
+      const label = usd(max * step).replace('.00', '');
+      return `<line x1="${pad.l}" y1="${y}" x2="${width - pad.r}" y2="${y}" stroke="rgba(255,255,255,0.06)" />
+        <text x="${pad.l - 8}" y="${y + 4}" text-anchor="end">${label}</text>`;
     }).join('');
+    const dots = points.map((point) => `
+      <circle cx="${point.x}" cy="${point.y}" r="4.5" fill="#06110c" stroke="#34d399" stroke-width="2" />
+      <text x="${point.x}" y="${height - 10}" text-anchor="middle">${esc(point.day)}</text>
+    `).join('');
+    $('#volume-chart').innerHTML = `
+      <svg class="volume-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Volume over the last 7 days">
+        <defs>
+          <linearGradient id="volume-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#34d399" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#34d399" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        ${grid}
+        <path d="${area}" fill="url(#volume-fill)" />
+        <path d="${line}" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+        ${dots}
+      </svg>
+    `;
   }
 
   function renderQuickRails(isAdmin) {

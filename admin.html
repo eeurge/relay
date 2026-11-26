@@ -72,18 +72,18 @@
             <span class="side-btn-left">Transactions</span>
             <span class="side-count" id="count-orders">0</span>
           </button>
-          <button type="button" class="side-btn" data-view="vendors">
+          <button type="button" class="side-btn" data-view="vendors" id="nav-vendors">
             <span class="side-btn-left">Vendors</span>
             <span class="side-count" id="count-vendors">0</span>
           </button>
           <button type="button" class="side-btn" data-view="payouts">
-            <span class="side-btn-left">Payout Queue</span>
+            <span class="side-btn-left" id="nav-payouts-label">Payout Queue</span>
             <span class="side-count" id="count-payouts">0</span>
           </button>
         </nav>
 
-        <div class="nav-group-label">Control</div>
-        <nav class="side-nav">
+        <div class="nav-group-label" id="nav-control-label">Control</div>
+        <nav class="side-nav" id="nav-control">
           <button type="button" class="side-btn" data-view="stripe">
             <span class="side-btn-left">Stripe &amp; Rails</span>
           </button>
@@ -119,39 +119,39 @@
         <section class="view is-active" id="view-overview">
           <div class="kpi-grid">
             <div class="kpi-card">
-              <div class="kpi-label">Gross Processed Volume</div>
+              <div class="kpi-label" id="kpi-gross-label">Gross Processed Volume</div>
               <div class="kpi-value" id="kpi-gross">$0.00</div>
-              <div class="kpi-sub">Across Stripe, PayPal &amp; Wallets</div>
+              <div class="kpi-sub" id="kpi-gross-sub">Across Stripe, PayPal &amp; Wallets</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Relay Net Commission</div>
+              <div class="kpi-label" id="kpi-net-label">Relay Net Commission</div>
               <div class="kpi-value" id="kpi-net">$0.00</div>
-              <div class="kpi-sub">Earned platform margin</div>
+              <div class="kpi-sub" id="kpi-net-sub">Earned platform margin</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Pending Vendor Payouts</div>
+              <div class="kpi-label" id="kpi-pending-label">Pending Vendor Payouts</div>
               <div class="kpi-value" id="kpi-pending">$0.00</div>
-              <div class="kpi-sub">Queued for USDT / BTC</div>
+              <div class="kpi-sub" id="kpi-pending-sub">Queued for USDT / BTC</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Active Vendors</div>
+              <div class="kpi-label" id="kpi-vendors-label">Active Vendors</div>
               <div class="kpi-value" id="kpi-vendors">0</div>
               <div class="kpi-sub" id="kpi-vendors-sub">0 pending review</div>
             </div>
           </div>
 
-          <div class="grid-2">
+          <div class="grid-2" id="overview-split">
             <div class="panel">
               <div class="panel-head">
-                <span class="panel-title">7-Day Processing Volume</span>
+                <span class="panel-title" id="chart-title">7-Day Processing Volume</span>
                 <span class="badge badge--green">Live Ledger</span>
               </div>
-              <div class="panel-body">
-                <div class="chart-bars" id="volume-chart"></div>
+              <div class="panel-body chart-panel">
+                <div id="volume-chart"></div>
               </div>
             </div>
 
-            <div class="panel">
+            <div class="panel" id="rails-panel">
               <div class="panel-head">
                 <span class="panel-title">Global Rail Switches</span>
               </div>

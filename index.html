@@ -96,69 +96,42 @@
           </div>
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
-          <div class="sandbox-card" aria-hidden="true">
+          <div class="sandbox-card" aria-label="Example Relay checkout">
             <div class="sandbox-top">
               <span class="sandbox-title">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
                 Checkout
               </span>
-              <span class="mode-badge">Example</span>
+              <span class="mode-badge" id="stripe-mode-badge">EXAMPLE</span>
             </div>
-
             <div class="sandbox-body">
               <div class="sandbox-store-row">
                 <div>
-                  <div class="sandbox-store-name">Example Product</div>
+                  <div class="sandbox-store-name" id="sb-item-label">Example Product</div>
                   <div class="sandbox-store-sub">yourstore.com</div>
                 </div>
-                <div class="sandbox-price">$49.00</div>
+                <div class="sandbox-price" id="sb-price-display">$49.00</div>
               </div>
-
-              <div class="sandbox-methods">
-                <span class="sandbox-method is-active">Stripe Card</span>
-                <span class="sandbox-method">PayPal</span>
-                <span class="sandbox-method">Apple / GPay</span>
+              <div class="sandbox-methods" role="tablist" aria-label="Choose payment rail">
+                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe Card</button>
+                <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
+                <button type="button" class="sandbox-method" data-sb-rail="wallets">Apple / GPay</button>
               </div>
-
-              <div class="display-fields">
-                <div class="display-field">
-                  <span>Amount</span>
-                  <strong>$49.00</strong>
+              <div class="sandbox-inputs">
+                <div>
+                  <label class="field-label" for="sb-amount">Amount (USD)</label>
+                  <input type="number" id="sb-amount" class="input" value="49" min="1" max="50000" />
                 </div>
-                <div class="display-field">
-                  <span>Customer</span>
-                  <strong>customer@email.com</strong>
+                <div>
+                  <label class="field-label" for="sb-email">Customer Email</label>
+                  <input type="email" id="sb-email" class="input" placeholder="customer@email.com" />
                 </div>
               </div>
-
-              <div class="display-pay">Pay $49.00</div>
-              <p class="display-note">A preview of the checkout on a vendor’s product page. Approved vendors track the sale and cash out in crypto from their dashboard.</p>
+              <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">Pay $49.00</button>
+              <div class="sandbox-console" id="sb-console">
+                <div>Example Product is ready. Choose a rail, then press pay. The result stays in this card.</div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         Compact Metric Strip
-         ==================================================================== -->
-    <section class="metrics-band" aria-label="Platform metrics">
-      <div class="container">
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-kicker">Vendor dashboard</div>
-            <div class="metric-val">Orders &amp; balance</div>
-            <p class="metric-label">Approved vendors sign in and see every sale, fee, and the amount ready to cash out.</p>
-          </div>
-          <div class="metric-card">
-            <div class="metric-kicker">Crypto only</div>
-            <div class="metric-val">USDT &amp; BTC</div>
-            <p class="metric-label">Cashouts are crypto. No bank wires, no PayPal withdrawals, no other payout rails.</p>
-          </div>
-          <div class="metric-card">
-            <div class="metric-kicker">On the product page</div>
-            <div class="metric-val">One embed</div>
-            <p class="metric-label">Cards, PayPal, Apple Pay, and Google Pay stay on the store. The vendor dashboard handles the rest.</p>
           </div>
         </div>
       </div>

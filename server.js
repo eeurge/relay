@@ -43,13 +43,14 @@ function hashPassword(password, salt) {
   return crypto.scryptSync(password, salt, 32).toString('hex');
 }
 
-function makeUserRecord({ id, name, email, password, role, temp = true, expiresAt = null, note = '' }) {
+function makeUserRecord({ id, name, email, password, role, temp = true, expiresAt = null, note = '', vendorId = null }) {
   const salt = crypto.randomBytes(12).toString('hex');
   return {
     id,
     name,
     email: email.toLowerCase(),
     role, // 'super_admin' | 'admin' | 'operator' | 'vendor'
+    vendorId,
     salt,
     passwordHash: hashPassword(password, salt),
     tempPasswordHint: temp ? password : null,
@@ -58,6 +59,71 @@ function makeUserRecord({ id, name, email, password, role, temp = true, expiresA
     note,
     active: true,
     createdAt: new Date().toISOString()
+  };
+}
+
+function exampleVendorBundle() {
+  const now = Date.now();
+  const day = 86400000;
+  const samples = [
+    [6, 42, 'stripe'],
+    [5, 128, 'paypal'],
+    [4, 76, 'wallets'],
+    [3, 210, 'stripe'],
+    [2, 64, 'stripe'],
+    [1, 155, 'paypal'],
+    [0, 89, 'wallets']
+  ];
+  const orders = samples.map(([daysAgo, gross, rail], index) => {
+    const fee = Math.round((gross * 0.06 + 0.3) * 100) / 100;
+    return {
+      id: `RL-EX${index + 1}`,
+      vendorId: 'vnd_example',
+      vendorName: 'Example Store',
+      item: 'Example Product',
+      customerEmail: 'customer@email.com',
+      rail,
+      gross,
+      fee,
+      net: Math.round((gross - fee) * 100) / 100,
+      status: 'paid',
+      webhookStatus: '200 OK',
+      stripeRef: `pi_example_${index + 1}`,
+      createdAt: new Date(now - daysAgo * day - 3 * 3600000).toISOString()
+    };
+  });
+  const net = orders.reduce((sum, order) => sum + order.net, 0);
+  return {
+    vendor: {
+      id: 'vnd_example',
+      name: 'Example Store',
+      website: 'https://yourstore.com',
+      email: 'vendor@relay.dev',
+      discord: 'example',
+      contact: 'vendor@relay.dev',
+      description: 'Example vendor account for viewing the dashboard.',
+      tier: 'growth',
+      rate: 6,
+      status: 'active',
+      rails: { stripe: true, paypal: true },
+      payoutMethod: 'USDT (TRC-20)',
+      payoutDest: 'Pending crypto wallet',
+      apiKey: 'rl_example_store',
+      monthlyVolume: 25000,
+      createdAt: new Date(now - 10 * day).toISOString()
+    },
+    orders,
+    payout: {
+      id: 'PO-EX1',
+      vendorId: 'vnd_example',
+      vendorName: 'Example Store',
+      amount: Math.round(net * 100) / 100,
+      method: 'USDT (TRC-20)',
+      destination: 'Pending crypto wallet',
+      status: 'pending',
+      txHash: null,
+      createdAt: new Date(now - 2 * 3600000).toISOString()
+    }
   };
 }
 
@@ -110,19 +176,41 @@ function createInitialStore() {
   };
 }
 
+function ensureVendorLogin(store) {
+  const bundle = exampleVendorBundle();
+  if (!store.users.some((user) => user.email === 'vendor@relay.dev')) {
+    store.users.push(makeUserRecord({
+      id: 'usr_vendor_1',
+      name: 'Example Vendor',
+      email: 'vendor@relay.dev',
+      password: 'RelayVendor!2026',
+      role: 'vendor',
+      vendorId: 'vnd_example',
+      temp: true,
+      expiresAt: null,
+      note: 'Vendor dashboard login'
+    }));
+  } else {
+    const existing = store.users.find((user) => user.email === 'vendor@relay.dev');
+    existing.vendorId = existing.vendorId || 'vnd_example';
+    existing.role = 'vendor';
+  }
+  if (!store.vendors.some((vendor) => vendor.id === 'vnd_example')) store.vendors.push(bundle.vendor);
+  if (!store.orders.some((order) => order.vendorId === 'vnd_example')) store.orders.push(...bundle.orders);
+  if (!store.payouts.some((payout) => payout.vendorId === 'vnd_example')) store.payouts.unshift(bundle.payout);
+  return store;
+}
+
 function loadStore() {
-  if (!fs.existsSync(STORE_PATH)) {
-    const seeded = createInitialStore();
-    saveStore(seeded);
-    return seeded;
+  let loaded;
+  if (!fs.existsSync(STORE_PATH)) loaded = createInitialStore();
+  else {
+    try { loaded = JSON.parse(fs.readFileSync(STORE_PATH, 'utf8')); }
+    catch { loaded = createInitialStore(); }
   }
-  try {
-    return JSON.parse(fs.readFileSync(STORE_PATH, 'utf8'));
-  } catch {
-    const seeded = createInitialStore();
-    saveStore(seeded);
-    return seeded;
-  }
+  const ready = ensureVendorLogin(loaded);
+  saveStore(ready);
+  return ready;
 }
 
 function saveStore(data) {
@@ -169,6 +257,7 @@ function getSessionUser(req) {
     name: user.name,
     email: user.email,
     role: user.role,
+    vendorId: user.vendorId || null,
     isTemp: user.isTemp,
     expiresAt: user.expiresAt
   };
@@ -551,9 +640,10 @@ app.get('/api/auth/me', (req, res) => {
 // ---------------------------------------------------------------------------
 app.get('/api/admin/overview', requireAuth, (req, res) => {
   const isAdmin = ['super_admin', 'admin', 'operator'].includes(req.user.role);
+  const vendorScope = isAdmin ? null : (req.user.vendorId || 'vnd_example');
   const visibleOrders = isAdmin
     ? store.orders
-    : store.orders.filter((o) => o.vendorId === 'vnd_acme01');
+    : store.orders.filter((o) => o.vendorId === vendorScope);
 
   const grossVolume = visibleOrders
     .filter((o) => o.status !== 'refunded')
@@ -562,7 +652,7 @@ app.get('/api/admin/overview', requireAuth, (req, res) => {
     .filter((o) => o.status !== 'refunded')
     .reduce((s, o) => s + o.fee, 0);
   const pendingPayouts = store.payouts
-    .filter((p) => p.status === 'pending' && (isAdmin || p.vendorId === 'vnd_acme01'))
+    .filter((p) => p.status === 'pending' && (isAdmin || p.vendorId === vendorScope))
     .reduce((s, p) => s + p.amount, 0);
 
   res.json({
@@ -588,8 +678,8 @@ app.get('/api/admin/overview', requireAuth, (req, res) => {
     },
     settings: store.settings,
     orders: visibleOrders,
-    vendors: isAdmin ? store.vendors : store.vendors.filter((v) => v.id === 'vnd_acme01'),
-    payouts: isAdmin ? store.payouts : store.payouts.filter((p) => p.vendorId === 'vnd_acme01')
+    vendors: isAdmin ? store.vendors : store.vendors.filter((v) => v.id === vendorScope),
+    payouts: isAdmin ? store.payouts : store.payouts.filter((p) => p.vendorId === vendorScope)
   });
 });
 

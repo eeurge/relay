@@ -35,6 +35,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadPublicConfig();
 
+  let sbRail = 'stripe';
+  const sbAmount = $('#sb-amount');
+  const sbPriceDisplay = $('#sb-price-display');
+  const sbPayBtn = $('#sb-pay-btn');
+  const sbConsole = $('#sb-console');
+
+  function syncSandboxPrice() {
+    const val = Math.max(1, Number(sbAmount?.value) || 49);
+    if (sbPriceDisplay) sbPriceDisplay.textContent = formatUSD(val);
+    if (sbPayBtn) sbPayBtn.textContent = `Pay ${formatUSD(val)}`;
+  }
+
+  sbAmount?.addEventListener('input', syncSandboxPrice);
+
+  $$('[data-sb-rail]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      sbRail = btn.dataset.sbRail;
+      $$('[data-sb-rail]').forEach((item) => item.classList.toggle('is-active', item === btn));
+    });
+  });
+
+  sbPayBtn?.addEventListener('click', () => {
+    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
+    const email = $('#sb-email')?.value?.trim() || 'customer@email.com';
+    const railLabel = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Apple Pay or Google Pay' : 'card';
+    if (sbConsole) {
+      sbConsole.innerHTML = `<div><strong>Example Product</strong> · ${formatUSD(amountUsd)} via ${railLabel}</div><div>${email} would continue to checkout on a vendor site.</div>`;
+    }
+  });
+
   // ------------------------------------------------------------------------
   // 2. Mobile Navigation Drawer
   // ------------------------------------------------------------------------

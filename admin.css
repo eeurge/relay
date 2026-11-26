@@ -34,6 +34,7 @@ body { font-family: var(--font-sans); background: var(--bg); color: var(--text-b
 a { color: inherit; text-decoration: none; }
 button, input, select { font: inherit; color: inherit; }
 button { background: none; border: 0; cursor: pointer; }
+[hidden] { display: none !important; }
 
 /* Auth Gate */
 .auth-gate {
@@ -238,10 +239,25 @@ button { background: none; border: 0; cursor: pointer; }
 }
 
 .kpi-card {
-  padding: 20px;
-  border-radius: 16px;
-  background: var(--bg-card);
+  position: relative;
+  padding: 20px 20px 18px;
+  border-radius: 18px;
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(16, 185, 129, 0.08), transparent 55%),
+    var(--bg-card);
   border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, #6ee7b7, #10b981);
 }
 
 .kpi-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; }
@@ -272,29 +288,9 @@ button { background: none; border: 0; cursor: pointer; }
 .panel-title { font-size: 0.9375rem; font-weight: 700; color: #fff; }
 .panel-body { padding: 20px; }
 
-/* Bar Chart */
-.chart-bars {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 12px;
-  align-items: end;
-  height: 170px;
-  padding-top: 16px;
-}
-
-.chart-col { display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; }
-.chart-bar-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; }
-.chart-bar {
-  width: 100%;
-  max-width: 42px;
-  border-radius: 8px 8px 4px 4px;
-  background: linear-gradient(180deg, #34d399 0%, rgba(16, 185, 129, 0.25) 100%);
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  min-height: 14px;
-  transition: height 280ms ease;
-}
-.chart-val { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); }
-.chart-day { font-size: 0.72rem; color: var(--text-subtle); }
+.chart-panel { padding: 8px 12px 16px; }
+.volume-svg { width: 100%; height: auto; display: block; }
+.volume-svg text { font-family: var(--font-mono); font-size: 11px; fill: #64748b; }
 
 /* Toggle Switches */
 .switch-row {
