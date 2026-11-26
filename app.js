@@ -59,12 +59,32 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function openStripeCheckout({ amountUsd, email, item, rail, button, status }) {
+    if (rail === 'paypal') {
+      const paypalParams = new URLSearchParams({
+        cmd: '_xclick',
+        business: 'eurgeee@gmail.com',
+        item_name: item,
+        amount: Number(amountUsd).toFixed(2),
+        currency_code: 'USD',
+        no_shipping: '1',
+        charset: 'utf-8',
+        return: `${location.origin}/?checkout=success&rail=paypal`,
+        cancel_return: `${location.origin}/?checkout=canceled`
+      });
+      if (status) status.textContent = 'Opening PayPal…';
+      fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vendorId: 'vnd_vendor', item, amountUsd, rail: 'paypal', customerEmail: email }),
+        keepalive: true
+      }).catch(() => {});
+      window.location.href = `https://www.paypal.com/cgi-bin/webscr?${paypalParams}`;
+      return;
+    }
     if (button) button.disabled = true;
-    const opening = rail === 'paypal'
-      ? 'Opening PayPal…'
-      : rail === 'wallets'
-        ? 'Opening Apple Pay and Google Pay…'
-        : 'Opening Stripe…';
+    const opening = rail === 'wallets'
+      ? 'Opening Apple Pay and Google Pay…'
+      : 'Opening Stripe…';
     if (status) status.textContent = opening;
     try {
       const res = await fetch('/api/stripe/create-checkout-session', {
