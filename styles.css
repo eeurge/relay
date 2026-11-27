@@ -414,14 +414,13 @@ svg { display: block; }
 /* Right Column: Live Stripe Plugin Sandbox Widget */
 .sandbox-card {
   position: relative;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #0b0f0d 0%, #060807 100%);
-  border: 1px solid rgba(16, 185, 129, 0.32);
+  border-radius: 18px;
+  background: #08090a;
+  border: 1px solid rgba(148, 163, 184, 0.14);
   box-shadow:
-    0 0 0 1px rgba(16, 185, 129, 0.08),
-    0 0 36px rgba(16, 185, 129, 0.28),
-    0 22px 48px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(52, 211, 153, 0.14);
+    0 0 0 1px rgba(16, 185, 129, 0.05),
+    0 0 28px rgba(16, 185, 129, 0.12),
+    0 24px 44px rgba(0, 0, 0, 0.42);
   overflow: hidden;
 }
 .sandbox-card::before {
@@ -430,11 +429,19 @@ svg { display: block; }
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(16, 185, 129, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 185, 129, 0.045) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 72%);
-  opacity: 0.7;
+    linear-gradient(rgba(148, 163, 184, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 64%);
+  opacity: 0.55;
+}
+.sandbox-card::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  border-radius: 12px;
 }
 
 .sandbox-top {
@@ -465,7 +472,7 @@ svg { display: block; }
   color: var(--accent-text);
 }
 
-.sandbox-body { position: relative; z-index: 1; padding: 22px 22px 18px; }
+.sandbox-body { position: relative; z-index: 1; padding: 24px 24px 20px; }
 
 .checkout-head {
   display: flex;
@@ -477,10 +484,18 @@ svg { display: block; }
 .checkout-kicker {
   font-family: var(--font-mono);
   font-size: 0.68rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #6ee7b7;
+  color: #64748b;
   margin-bottom: 4px;
+}
+.checkout-method-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 8px;
 }
 .sandbox-store-name { font-size: 1.35rem; font-weight: 650; letter-spacing: -0.03em; color: #fff; }
 .sandbox-price { font-size: 1.7rem; font-weight: 650; letter-spacing: -0.04em; color: #fff; font-family: var(--font-mono); }
@@ -562,7 +577,7 @@ svg { display: block; }
   border-radius: 10px;
   gap: 8px;
   font-weight: 700;
-  box-shadow: 0 0 22px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 18px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 .sandbox-card #sb-pay-btn .pay-lock {
   width: 14px;
@@ -882,32 +897,58 @@ svg { display: block; }
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 18px;
+  align-items: stretch;
+  padding-top: 22px;
   margin-bottom: 8px;
 }
 
 .price-card {
-  padding: 28px 26px 28px;
-  border-radius: var(--radius-xl);
+  padding: 26px 24px 24px;
+  border-radius: 18px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 32px 76px 56px 40px 1fr;
+  gap: 0;
 }
 
 .price-card--featured {
+  transform: translateY(-18px);
   border-color: var(--accent-border);
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, var(--bg-card) 45%);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, var(--bg-card) 42%);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.42);
+  z-index: 1;
 }
 
-.price-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.price-name { font-size: 1.125rem; font-weight: 700; color: #fff; }
-.price-num { font-size: 2.25rem; font-weight: 700; color: #fff; letter-spacing: -0.03em; font-family: var(--font-mono); }
-.price-unit { font-size: 0.8125rem; color: var(--text-muted); margin-left: 6px; }
-.price-desc { font-size: 0.875rem; color: var(--text-muted); margin: 10px 0 16px; line-height: 1.5; }
-.price-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle); }
-.price-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 0.875rem; color: var(--text-body); line-height: 1.45; }
+.price-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  margin-bottom: 0;
+}
+.price-name { font-size: 1.05rem; font-weight: 650; letter-spacing: -0.02em; color: #fff; }
+.price-rate { display: flex; flex-direction: column; justify-content: flex-start; gap: 4px; min-height: 76px; padding-top: 4px; }
+.price-num { font-size: 2.15rem; font-weight: 700; color: #fff; letter-spacing: -0.04em; font-family: var(--font-mono); line-height: 1; }
+.price-unit { font-size: 0.78rem; color: var(--text-muted); margin-left: 0; }
+.price-desc {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 6px 0 12px;
+  line-height: 1.45;
+}
+.price-card > .btn { height: 40px; align-self: start; }
+.price-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+.price-list li { display: flex; align-items: flex-start; gap: 9px; min-height: 22px; font-size: 0.84rem; color: var(--text-body); line-height: 1.4; }
 .price-list svg { color: var(--accent-text); flex-shrink: 0; margin-top: 2px; }
 
 .char-count {
@@ -1069,6 +1110,7 @@ svg { display: block; }
   .flow-strip { grid-template-columns: repeat(2, 1fr); }
   .pricing-grid, .bento-bottom, .metrics-grid { grid-template-columns: repeat(2, 1fr); }
   .price-card { min-height: 0; }
+  .price-card--featured { transform: none; }
 }
 
 @media (max-width: 768px) {
@@ -1080,4 +1122,5 @@ svg { display: block; }
   }
   .section { padding: 64px 0; }
   .price-card { min-height: 0; }
+  .price-card--featured { transform: none; }
 }

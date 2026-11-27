@@ -124,6 +124,7 @@
                 </div>
                 <div class="sandbox-price" id="sb-price-display">$49.00</div>
               </div>
+              <p class="checkout-method-label">Choose Payment Method</p>
               <div class="sandbox-methods" role="tablist" aria-label="Payment methods">
                 <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe</button>
                 <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
@@ -316,8 +317,8 @@
         <div class="pricing-grid">
           <article class="price-card">
             <div class="price-head"><h3 class="price-name">Starter</h3></div>
-            <div><span class="price-num" data-tier-rate="starter">5.5%</span><span class="price-unit">+ $0.30 / under $10k mo</span></div>
-            <p class="price-desc">A first live storefront: drop-in checkout, a vendor login, and crypto cashouts after Relay approves the application.</p>
+            <div class="price-rate"><span class="price-num" data-tier-rate="starter">5.5%</span><span class="price-unit">+ $0.30 / under $10k mo</span></div>
+            <p class="price-desc">Drop-in checkout, a vendor login, and crypto cashouts after approval.</p>
             <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="5000">Apply for Starter</button>
             <ul class="price-list">
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Drop-in Stripe &amp; PayPal plugin</li>
@@ -336,8 +337,8 @@
               <h3 class="price-name">Growth</h3>
               <span class="mode-badge">Most Popular</span>
             </div>
-            <div><span class="price-num" data-tier-rate="growth">5.0%</span><span class="price-unit">+ $0.30 / $10k – $50k mo</span></div>
-            <p class="price-desc">For stores that already sell at volume: API access, same-day settlements, and a dedicated vendor desk for orders and cashouts.</p>
+            <div class="price-rate"><span class="price-num" data-tier-rate="growth">5.0%</span><span class="price-unit">+ $0.30 / $10k – $50k mo</span></div>
+            <p class="price-desc">API access, same-day settlements, and a dedicated desk for orders.</p>
             <button type="button" class="btn btn--primary btn--full" data-open-apply data-volume="25000">Apply for Growth</button>
             <ul class="price-list">
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Full REST API + embed plugin</li>
@@ -353,8 +354,8 @@
 
           <article class="price-card">
             <div class="price-head"><h3 class="price-name">Enterprise</h3></div>
-            <div><span class="price-num" data-tier-rate="enterprise">4.5%</span><span class="price-unit">+ $0.30 / $50k+ monthly</span></div>
-            <p class="price-desc">A private Stripe and PayPal pool, named terms, and engineering support for high-volume or multi-store operators.</p>
+            <div class="price-rate"><span class="price-num" data-tier-rate="enterprise">4.5%</span><span class="price-unit">+ $0.30 / $50k+ monthly</span></div>
+            <p class="price-desc">Private Stripe and PayPal pool, named terms, and engineering support.</p>
             <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="75000">Request Enterprise</button>
             <ul class="price-list">
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Dedicated Stripe &amp; PayPal pool</li>
