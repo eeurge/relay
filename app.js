@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.settings?.commissions) {
         liveCommissions = { ...liveCommissions, ...data.settings.commissions };
         renderPricing();
-        updateCalculator();
       }
     } catch {}
   }
@@ -116,9 +115,64 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  async function openHomepageCheckout() {
+    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
+    const email = $('#sb-email')?.value?.trim() || '';
+    const rail = sbRail === 'apple' ? 'wallets' : sbRail;
+    if (sbPayBtn) sbPayBtn.disabled = true;
+    if (sbConsole) {
+      sbConsole.textContent = rail === 'paypal'
+        ? 'Opening PayPal…'
+        : rail === 'wallets'
+          ? 'Opening Apple Pay…'
+          : 'Opening Stripe…';
+    }
+    try {
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vendorId: 'vnd_vendor',
+          item: 'Checkout',
+          amountUsd,
+          rail,
+          customerEmail: email
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Checkout failed');
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      if (sbConsole) sbConsole.textContent = data.error || 'Checkout did not open.';
+    } catch (err) {
+      if (sbConsole) sbConsole.textContent = err.message || 'Checkout failed';
+    } finally {
+      if (sbPayBtn) sbPayBtn.disabled = false;
+    }
+  }
+
   sbPayBtn?.addEventListener('click', () => {
-    if (sbConsole) sbConsole.textContent = 'Preview only. This card does not take a payment.';
+    openHomepageCheckout();
   });
+
+  const checkoutParams = new URLSearchParams(window.location.search);
+  if (checkoutParams.get('checkout') === 'success' && checkoutParams.get('order')) {
+    const orderId = checkoutParams.get('order');
+    fetch(`/api/stripe/confirm?order=${encodeURIComponent(orderId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const paid = data.order?.status === 'paid' || data.paymentStatus === 'paid';
+        const message = data.order?.rail === 'paypal'
+          ? `${orderId} was sent to PayPal.`
+          : paid
+            ? `${orderId} was paid.`
+            : `${orderId} is waiting on Stripe.`;
+        if (sbConsole) sbConsole.textContent = message;
+      })
+      .catch(() => {});
+  }
 
   // ------------------------------------------------------------------------
   // 2. Mobile Navigation Drawer
@@ -244,43 +298,6 @@ if (event.type === 'checkout.session.completed') {
     setTimeout(() => { btn.textContent = 'Copy snippet'; }, 1600);
   });
 
-  $$('[data-cselect]').forEach((root) => {
-    const trigger = $('.cselect-btn', root);
-    const menu = $('.cselect-menu', root);
-    const hidden = $('input[type="hidden"]', root);
-    const label = $('.cselect-value', root);
-    trigger.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const willOpen = menu.hidden;
-      $$('.cselect-menu').forEach((other) => { other.hidden = true; });
-      $$('[data-cselect]').forEach((other) => {
-        other.classList.remove('is-open');
-        $('.cselect-btn', other)?.setAttribute('aria-expanded', 'false');
-      });
-      menu.hidden = !willOpen;
-      root.classList.toggle('is-open', willOpen);
-      trigger.setAttribute('aria-expanded', String(willOpen));
-    });
-    $$('[data-value]', menu).forEach((option) => {
-      option.addEventListener('click', () => {
-        hidden.value = option.dataset.value;
-        label.textContent = option.textContent.trim();
-        $$('[data-value]', menu).forEach((item) => item.setAttribute('aria-selected', String(item === option)));
-        menu.hidden = true;
-        root.classList.remove('is-open');
-        trigger.setAttribute('aria-expanded', 'false');
-        hidden.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    });
-  });
-  document.addEventListener('click', () => {
-    $$('.cselect-menu').forEach((menu) => { menu.hidden = true; });
-    $$('[data-cselect]').forEach((root) => {
-      root.classList.remove('is-open');
-      $('.cselect-btn', root)?.setAttribute('aria-expanded', 'false');
-    });
-  });
-
   const aboutField = $('#app-about');
   const aboutCount = $('#about-count');
   aboutField?.addEventListener('input', () => {
@@ -290,7 +307,7 @@ if (event.type === 'checkout.session.completed') {
   });
 
   // ------------------------------------------------------------------------
-  // 5. Pricing & Payout Calculator
+  // 5. Pricing
   // ------------------------------------------------------------------------
   function rateFor(tier, rail) {
     if (rail === 'paypal') {
@@ -305,62 +322,22 @@ if (event.type === 'checkout.session.completed') {
       const el = $(`[data-tier-rate="${tier}"]`);
       if (el) el.textContent = `${rateFor(tier, activePricingRail).toFixed(1)}%`;
     });
-  }
-
-  const calcVol = $('#calc-volume');
-  const calcRail = $('#calc-rail');
-  const calcSlider = $('#calc-slider');
-
-  function updateCalculator() {
-    if (!calcVol) return;
-    const vol = Math.max(500, Number(calcVol.value) || 0);
-    const rail = calcRail?.value || 'stripe';
-    const tierKey = vol >= 50000 ? 'enterprise' : vol >= 10000 ? 'growth' : 'starter';
-    const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
-    const rate = rateFor(tierKey, rail);
-    const fee = (vol * rate) / 100;
-    const net = Math.max(0, vol - fee);
-
-    $('#calc-tier').textContent = `${tierLabel} · ${rate.toFixed(1)}%`;
-    $('#calc-gross').textContent = formatUSD(vol);
-    $('#calc-fee').textContent = formatUSD(fee);
-    $('#calc-net').textContent = formatUSD(net);
+    $$('[data-rail-line]').forEach((item) => {
+      const copy = activePricingRail === 'paypal' ? item.dataset.paypalCopy : item.dataset.stripeCopy;
+      const label = item.querySelector('span');
+      if (copy && label) label.textContent = copy;
+    });
   }
 
   $$('[data-rail-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
       activePricingRail = btn.dataset.railTab;
       $$('[data-rail-tab]').forEach((b) => b.classList.toggle('is-active', b === btn));
-      if (calcRail) calcRail.value = activePricingRail;
-      const calcLabel = $('#calculator .cselect-value');
-      if (calcLabel) calcLabel.textContent = activePricingRail === 'paypal' ? 'PayPal Checkout' : 'Stripe & Cards';
-      $$('#calculator [data-value]').forEach((item) => {
-        item.setAttribute('aria-selected', String(item.dataset.value === activePricingRail));
-      });
       renderPricing();
-      updateCalculator();
     });
   });
 
-  calcVol?.addEventListener('input', () => {
-    if (calcSlider) calcSlider.value = String(Math.min(100000, Math.max(500, Number(calcVol.value) || 500)));
-    updateCalculator();
-  });
-
-  calcSlider?.addEventListener('input', () => {
-    if (calcVol) calcVol.value = calcSlider.value;
-    updateCalculator();
-  });
-
-  calcRail?.addEventListener('change', () => {
-    activePricingRail = calcRail.value;
-    $$('[data-rail-tab]').forEach((b) => b.classList.toggle('is-active', b.dataset.railTab === activePricingRail));
-    renderPricing();
-    updateCalculator();
-  });
-
   renderPricing();
-  updateCalculator();
 
   // ------------------------------------------------------------------------
   // 6. FAQ Accordion

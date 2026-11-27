@@ -434,7 +434,8 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
     } = req.body || {};
 
     const gross = Math.max(1, Math.min(250000, Number(amountUsd) || 49));
-    const safeRail = ['stripe', 'paypal', 'wallets'].includes(rail) ? rail : 'stripe';
+    const requestedRail = rail === 'apple' ? 'wallets' : rail;
+    const safeRail = ['stripe', 'paypal', 'wallets'].includes(requestedRail) ? requestedRail : 'stripe';
 
     if (!store.settings.rails[safeRail]) {
       return res.status(400).json({ error: `The ${safeRail} rail is currently paused by Admin.` });
