@@ -4,8 +4,8 @@ const crypto = require('crypto');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const mysql = require('mysql2/promise');
 const { OAuth2Client } = require('google-auth-library');
-const { Pool } = require('pg');
 
 const PORT = Number(process.env.PORT || 8787);
 const SITE_ORIGIN = String(process.env.SITE_ORIGIN || 'https://relaypayus.shop').replace(/\/$/, '');
@@ -14,10 +14,40 @@ const SESSION_COOKIE = 'rp_session';
 const CSRF_COOKIE = 'rp_csrf';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
 
-function postgresUrl() {
-  const databaseUrl = String(process.env.DATABASE_URL || '').trim();
-  if (/^postgres(ql)?:\/\//i.test(databaseUrl)) return databaseUrl;
-  return String(process.env.POSTGRES_URL || '').trim();
+function mysqlUrl() {
+  return String(process.env.DATABASE_URL || '').trim();
+}
+
+function connectionOptions(raw) {
+  let url;
+  try {
+    url = new URL(String(raw || '').trim());
+  } catch {
+    throw new Error('DATABASE_URL is not a valid mysql:// address. On Aiven, copy the Service URI.');
+  }
+  if (url.protocol !== 'mysql:') {
+    throw new Error('DATABASE_URL must start with mysql://. Google sign-in uses the same Aiven MySQL as the site, not Postgres.');
+  }
+  if (!url.hostname || !url.username || !url.password) {
+    throw new Error('DATABASE_URL is missing the user, the password, or the @ before the host.');
+  }
+  const database = decodeURIComponent(url.pathname.replace(/^\//, '')) || 'defaultdb';
+  const sslMode = (url.searchParams.get('ssl-mode') || url.searchParams.get('sslmode') || '').toUpperCase();
+  const options = {
+    host: url.hostname,
+    port: Number(url.port || 3306),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database,
+    waitForConnections: true,
+    connectionLimit: 4,
+    connectTimeout: 20000,
+    enableKeepAlive: true
+  };
+  if (sslMode === 'REQUIRED' || url.hostname.endsWith('.aivencloud.com')) {
+    options.ssl = { rejectUnauthorized: false };
+  }
+  return options;
 }
 
 function cookieOpts() {
@@ -56,15 +86,8 @@ function publicUser(row) {
   };
 }
 
-const DATABASE_URL = postgresUrl();
-const pool = DATABASE_URL
-  ? new Pool({
-      connectionString: DATABASE_URL,
-      ssl: DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false },
-      max: 4
-    })
-  : null;
-
+const DATABASE_URL = mysqlUrl();
+const pool = DATABASE_URL ? mysql.createPool(connectionOptions(DATABASE_URL)) : null;
 const googleClient = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 
 const app = express();
@@ -81,8 +104,12 @@ app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     service: 'relaypay-api',
-    storage: pool ? 'postgres' : 'unconfigured'
+    storage: pool ? 'mysql' : 'unconfigured'
   });
+});
+
+app.get('/auth/config', (_req, res) => {
+  res.json({ googleClientId: GOOGLE_CLIENT_ID });
 });
 
 app.get('/auth/csrf', (req, res) => {
@@ -119,25 +146,28 @@ app.post('/auth/google', async (req, res) => {
     const name = String(payload.name || email.split('@')[0]).slice(0, 80);
     const picture = payload.picture ? String(payload.picture).slice(0, 500) : null;
 
-    const upsert = await pool.query(
+    await pool.query(
       `INSERT INTO rp_users (google_sub, email, name, picture, last_login_at)
-       VALUES ($1, $2, $3, $4, NOW())
-       ON CONFLICT (google_sub) DO UPDATE SET
-         email = EXCLUDED.email,
-         name = EXCLUDED.name,
-         picture = EXCLUDED.picture,
-         last_login_at = NOW()
-       RETURNING id, email, name, picture`,
+       VALUES (?, ?, ?, ?, NOW())
+       ON DUPLICATE KEY UPDATE
+         email = VALUES(email),
+         name = VALUES(name),
+         picture = VALUES(picture),
+         last_login_at = NOW()`,
       [payload.sub, email, name, picture]
     );
-    const user = upsert.rows[0];
+    const [users] = await pool.query(
+      'SELECT id, email, name, picture FROM rp_users WHERE google_sub = ? LIMIT 1',
+      [payload.sub]
+    );
+    const user = users[0];
+    if (!user) return res.status(500).json({ error: 'Could not save the Google account.' });
 
     const rawToken = crypto.randomBytes(32).toString('hex');
     const csrfToken = crypto.randomBytes(24).toString('hex');
     const expiresAt = new Date(Date.now() + SESSION_MS);
     await pool.query(
-      `INSERT INTO rp_sessions (user_id, token_hash, csrf_token, expires_at)
-       VALUES ($1, $2, $3, $4)`,
+      'INSERT INTO rp_sessions (user_id, token_hash, csrf_token, expires_at) VALUES (?, ?, ?, ?)',
       [user.id, hashToken(rawToken), csrfToken, expiresAt]
     );
 
@@ -153,18 +183,18 @@ async function loadSession(req) {
   if (!pool) return null;
   const raw = req.cookies[SESSION_COOKIE];
   if (!raw) return null;
-  const result = await pool.query(
+  const [rows] = await pool.query(
     `SELECT s.id AS session_id, s.csrf_token, s.expires_at, u.id, u.email, u.name, u.picture
      FROM rp_sessions s
      JOIN rp_users u ON u.id = s.user_id
-     WHERE s.token_hash = $1
+     WHERE s.token_hash = ?
      LIMIT 1`,
     [hashToken(raw)]
   );
-  const row = result.rows[0];
+  const row = rows[0];
   if (!row) return null;
   if (new Date(row.expires_at).getTime() <= Date.now()) {
-    await pool.query('DELETE FROM rp_sessions WHERE id = $1', [row.session_id]);
+    await pool.query('DELETE FROM rp_sessions WHERE id = ?', [row.session_id]);
     return null;
   }
   return row;
@@ -183,7 +213,7 @@ app.get('/auth/me', async (req, res) => {
 app.post('/auth/logout', async (req, res) => {
   try {
     if (pool && req.cookies[SESSION_COOKIE]) {
-      await pool.query('DELETE FROM rp_sessions WHERE token_hash = $1', [hashToken(req.cookies[SESSION_COOKIE])]);
+      await pool.query('DELETE FROM rp_sessions WHERE token_hash = ?', [hashToken(req.cookies[SESSION_COOKIE])]);
     }
   } catch {}
   const clear = { ...cookieOpts(), maxAge: 0 };
@@ -192,12 +222,20 @@ app.post('/auth/logout', async (req, res) => {
   res.json({ ok: true });
 });
 
+async function ensureSchema() {
+  const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
+  const statements = sql.split(';').map((chunk) => chunk.trim()).filter(Boolean);
+  for (const statement of statements) {
+    await pool.query(statement);
+  }
+}
+
 async function start() {
   if (pool) {
-    const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
-    await pool.query(sql);
+    await pool.query('SELECT 1');
+    await ensureSchema();
   } else {
-    console.error('Postgres is not configured. Set POSTGRES_URL (or a postgres:// DATABASE_URL) on the API service. Do not use the Aiven MySQL URI.');
+    console.error('MySQL is not configured. Set DATABASE_URL to the Aiven mysql:// Service URI on the API service.');
   }
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`relaypay-api listening on ${PORT}`);

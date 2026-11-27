@@ -1,15 +1,26 @@
 # relaypay-api
 
-Google sign-in API for Relay. This is a separate Postgres service. Do not point it at the Aiven MySQL `DATABASE_URL`.
+Google sign-in API for Relay. Uses the same Aiven MySQL as the main site (`DATABASE_URL`). There is no Postgres.
 
 ## Render env vars
 
-Set these on the API service (no values in git):
+Set these on the API web service (do not put values in git):
 
 - `SITE_ORIGIN`
 - `GOOGLE_CLIENT_ID`
-- `POSTGRES_URL`
+- `DATABASE_URL`
 
-`DATABASE_URL` is used only when it starts with `postgres://` or `postgresql://`. The MySQL Aiven URI will be ignored. Set `POSTGRES_URL` to the Postgres connection string.
+`DATABASE_URL` is the Aiven MySQL Service URI (`mysql://...`). The server creates `rp_users` and `rp_sessions` on boot.
 
-Apply `schema.sql` on first boot (the server also runs it at startup). Bind the service to `https://api.relaypayus.shop`.
+Bind the service to `https://api.relaypayus.shop`.
+
+## Homepage
+
+Leave `data-google-client-id` empty in git. Set it on the `/js/relaypay-auth.js` script tag on the live site, or leave it blank and the page will load the client id from `GET /auth/config`.
+
+## Cloudflare DNS
+
+If `api.relaypayus.shop` is not already pointing at this Render service, add a CNAME:
+
+- Name: `api`
+- Target: the hostname Render shows for the API service (usually `*.onrender.com`)

@@ -1,7 +1,17 @@
 (function () {
   const script = document.currentScript;
   const API_BASE = (script && script.dataset.apiBase) || 'https://api.relaypayus.shop';
-  const GOOGLE_CLIENT_ID = (script && script.dataset.googleClientId) || '';
+  let googleClientId = (script && script.dataset.googleClientId) || '';
+
+  async function resolveClientId() {
+    if (googleClientId) return googleClientId;
+    try {
+      const res = await fetch(`${API_BASE}/auth/config`, { credentials: 'include' });
+      const data = await res.json();
+      googleClientId = String(data.googleClientId || '').trim();
+    } catch {}
+    return googleClientId;
+  }
 
   async function csrfToken() {
     const res = await fetch(`${API_BASE}/auth/csrf`, { credentials: 'include' });
@@ -61,13 +71,14 @@
   }
 
   async function startGoogle(button) {
-    if (!GOOGLE_CLIENT_ID) {
-      setError(button, 'Set your Google client ID on the page to enable Google sign-in.');
+    const clientId = await resolveClientId();
+    if (!clientId) {
+      setError(button, 'Google sign-in is not configured.');
       return;
     }
     await waitForGoogle();
     window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
+      client_id: clientId,
       callback: async (response) => {
         try {
           await exchangeCredential(response.credential);

@@ -35,8 +35,10 @@
       </nav>
 
       <div class="header-actions">
-        <button type="button" class="quiet-link header-desktop-btn" data-guest-only data-open-signup>Sign up</button>
-        <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-guest-only data-open-signin>Sign in</button>
+        <div class="header-auth">
+          <button type="button" class="quiet-link header-desktop-btn" data-guest-only data-open-signup>Sign up</button>
+          <button type="button" class="quiet-link header-desktop-btn" id="header-signin-btn" data-guest-only data-open-signin>Sign in</button>
+        </div>
         <div class="account-menu" id="home-account" hidden>
           <button type="button" class="user-pill" id="home-account-btn" aria-expanded="false" aria-haspopup="menu">
             <span class="user-avatar" id="home-avatar">R</span>
@@ -150,7 +152,7 @@
                 </svg>
                 <span id="sb-pay-label">Pay $49.00</span>
               </button>
-              <div class="sandbox-console" id="sb-console">Pay opens a live Checkout page.</div>
+              <div class="sandbox-console" id="sb-console"></div>
             </div>
           </div>
         </div>
@@ -554,7 +556,7 @@
        Modal 2: Vendor Application (Streams straight to Admin Panel)
        ====================================================================== -->
   <div class="modal-backdrop" id="apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-title" hidden>
-    <div class="modal-card">
+    <div class="modal-card modal-card--apply">
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="apply-title">Apply as a Vendor</h3>
