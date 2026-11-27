@@ -359,23 +359,16 @@ if (event.type === 'checkout.session.completed') {
   // 6. FAQ Accordion
   // ------------------------------------------------------------------------
   const faqItems = $$('.faq-item');
-  function syncFaq(item) {
-    const p = $('.faq-panel', item);
-    if (p) p.style.maxHeight = item.classList.contains('is-open') ? `${p.scrollHeight}px` : '0px';
-  }
   faqItems.forEach((item) => {
-    syncFaq(item);
     $('.faq-trigger', item)?.addEventListener('click', () => {
       const open = !item.classList.contains('is-open');
       faqItems.forEach((o) => {
         o.classList.remove('is-open');
         $('.faq-trigger', o)?.setAttribute('aria-expanded', 'false');
-        syncFaq(o);
       });
       if (open) {
         item.classList.add('is-open');
         $('.faq-trigger', item)?.setAttribute('aria-expanded', 'true');
-        syncFaq(item);
       }
     });
   });
@@ -408,61 +401,15 @@ if (event.type === 'checkout.session.completed') {
     setTimeout(() => $('#login-email')?.focus(), 50);
   }));
 
-  function showSignupPanel(which) {
-    const isKey = which !== 'account';
-    const keyPanel = $('#signup-panel-key');
-    const accountPanel = $('#signup-panel-account');
-    const keyTab = $('#signup-tab-key');
-    const accountTab = $('#signup-tab-account');
-    if (keyPanel) keyPanel.hidden = !isKey;
-    if (accountPanel) accountPanel.hidden = isKey;
-    keyTab?.classList.toggle('is-active', isKey);
-    accountTab?.classList.toggle('is-active', !isKey);
-    keyTab?.setAttribute('aria-selected', String(isKey));
-    accountTab?.setAttribute('aria-selected', String(!isKey));
-  }
-
   function signupKeyValue() {
     return ($('#signup-access-key')?.value || '').trim();
   }
 
-  $('#signup-key-continue')?.addEventListener('click', () => {
-    const errEl = $('#signup-key-error');
-    if (!signupKeyValue()) {
-      if (errEl) {
-        errEl.textContent = 'Enter your access key.';
-        errEl.hidden = false;
-      }
-      return;
-    }
-    if (errEl) errEl.hidden = true;
-    showSignupPanel('account');
-    setTimeout(() => $('#signup-name')?.focus(), 50);
-  });
-
-  $('#signup-tab-key')?.addEventListener('click', () => showSignupPanel('key'));
-  $('#signup-tab-account')?.addEventListener('click', () => {
-    const errEl = $('#signup-key-error');
-    if (!signupKeyValue()) {
-      if (errEl) {
-        errEl.textContent = 'Enter your access key.';
-        errEl.hidden = false;
-      }
-      showSignupPanel('key');
-      return;
-    }
-    if (errEl) errEl.hidden = true;
-    showSignupPanel('account');
-  });
-
   $$('[data-open-signup]').forEach((b) => b.addEventListener('click', () => {
     const signupErr = $('#signup-error');
-    const keyErr = $('#signup-key-error');
     if (signupErr) signupErr.hidden = true;
-    if (keyErr) keyErr.hidden = true;
-    showSignupPanel('key');
     openModal(signupModal);
-    setTimeout(() => $('#signup-access-key')?.focus(), 50);
+    setTimeout(() => $('#signup-name')?.focus(), 50);
   }));
 
   $$('[data-fill-login]').forEach((chip) => {
@@ -501,7 +448,6 @@ if (event.type === 'checkout.session.completed') {
     if (!signupKeyValue()) {
       errEl.textContent = 'Access key is invalid.';
       errEl.hidden = false;
-      showSignupPanel('key');
       return;
     }
     if (($('#signup-name').value || '').trim().length < 2) {

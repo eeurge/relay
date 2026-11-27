@@ -129,11 +129,11 @@
               <p class="checkout-method-label">Choose Payment Method</p>
               <div class="sandbox-methods" role="tablist" aria-label="Payment methods">
                 <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">
-                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.48 9.88c-1.63-.6-2.51-1.07-2.51-1.8 0-.62.51-.98 1.42-.98 1.67 0 3.38.64 4.56 1.22l.67-4.11C16.43 3.53 14.59 3.07 12.52 3.07c-1.16 0-2.23.27-3.1.79-1.18.7-1.76 1.66-1.76 2.67 0 2.54 2.47 3.43 4.5 4.17 1.67.58 2.51 1.02 2.51 1.87 0 .73-.63 1.16-1.76 1.16-1.41 0-3.79-.74-5.3-1.37l-.67 4.16c1.47.66 3.92 1.25 6.08 1.25 4.26 0 7.01-2.08 7.01-5.67 0-2.08-1.01-3.6-4.23-4.89z"/></svg>
+                  <img class="pay-mark" src="/img/stripe-mark.png" alt="" />
                   Stripe
                 </button>
                 <button type="button" class="sandbox-method" data-sb-rail="paypal">
-                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.08 21.34H2.47a.64.64 0 0 1-.63-.74L4.94.9A1.07 1.07 0 0 1 6 0h7.46c2.57 0 4.58.54 5.69 1.81 1.01 1.15 1.3 2.61 1.3 4.29 0 .15 0 .31-.02.46-.67 5.21-4.64 8.08-10.14 8.08H8.22a1.07 1.07 0 0 0-1.05.9l-1.09 5.8zm6.32-12.1c2.84 0 4.1-1.37 4.48-4.12.14-1.02.02-1.73-.43-2.22-.5-.54-1.4-.82-2.62-.82H11.4L10.2 9.24h3.2z"/></svg>
+                  <img class="pay-mark pay-mark--wide" src="/img/paypal-mark.png" alt="" />
                   PayPal
                 </button>
                 <button type="button" class="sandbox-method" data-sb-rail="apple">
@@ -528,49 +528,39 @@
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="signup-title">Create your Relay account</h3>
-          <p class="modal-sub">An access key is required before you can create an account.</p>
+          <p class="modal-sub">Use this email and password the next time you sign in.</p>
         </div>
         <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
       </div>
-      <div class="auth-tabs" role="tablist" aria-label="Sign up steps">
-        <button type="button" class="auth-tab is-active" id="signup-tab-key" data-signup-tab="key" role="tab" aria-selected="true">Access key</button>
-        <button type="button" class="auth-tab" id="signup-tab-account" data-signup-tab="account" role="tab" aria-selected="false">Account</button>
-      </div>
       <form id="signup-form" class="form-stack">
-        <div id="signup-panel-key" data-signup-panel="key">
-          <div>
-            <label class="field-label" for="signup-access-key">Access key</label>
-            <input type="text" id="signup-access-key" class="input" placeholder="Enter your access key" autocomplete="off" spellcheck="false" required />
-          </div>
-          <div id="signup-key-error" class="alert-err" hidden></div>
-          <button type="button" class="btn btn--primary btn--lg btn--full" id="signup-key-continue">Continue</button>
+        <div>
+          <label class="field-label" for="signup-name">Name</label>
+          <input type="text" id="signup-name" class="input" placeholder="Your name" required maxlength="80" />
         </div>
-        <div id="signup-panel-account" data-signup-panel="account" hidden>
-          <div>
-            <label class="field-label" for="signup-name">Name</label>
-            <input type="text" id="signup-name" class="input" placeholder="Your name" maxlength="80" />
-          </div>
-          <div>
-            <label class="field-label" for="signup-email">Email</label>
-            <input type="email" id="signup-email" class="input" placeholder="you@email.com" />
-          </div>
-          <div>
-            <label class="field-label" for="signup-password">Password</label>
-            <input type="password" id="signup-password" class="input" placeholder="At least 8 characters" minlength="8" />
-          </div>
-          <div>
-            <label class="field-label" for="signup-confirm">Confirm password</label>
-            <input type="password" id="signup-confirm" class="input" placeholder="Type it again" minlength="8" />
-          </div>
-          <div id="signup-error" class="alert-err" hidden></div>
-          <button type="submit" class="btn btn--primary btn--lg btn--full">Create account</button>
-          <div class="auth-split" aria-hidden="true">or</div>
-          <button type="button" class="google-auth-btn" data-google-signin>
-            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            Continue with Google
-          </button>
-          <button type="button" class="quiet-link" data-open-signin>Already have an account? Sign in</button>
+        <div>
+          <label class="field-label" for="signup-email">Email</label>
+          <input type="email" id="signup-email" class="input" placeholder="you@email.com" required />
         </div>
+        <div>
+          <label class="field-label" for="signup-password">Password</label>
+          <input type="password" id="signup-password" class="input" placeholder="At least 8 characters" required minlength="8" />
+        </div>
+        <div>
+          <label class="field-label" for="signup-confirm">Confirm password</label>
+          <input type="password" id="signup-confirm" class="input" placeholder="Type it again" required minlength="8" />
+        </div>
+        <div>
+          <label class="field-label" for="signup-access-key">Access key</label>
+          <input type="text" id="signup-access-key" class="input" placeholder="Required to create an account" autocomplete="off" spellcheck="false" required />
+        </div>
+        <div id="signup-error" class="alert-err" hidden></div>
+        <button type="submit" class="btn btn--primary btn--lg btn--full">Create account</button>
+        <div class="auth-split" aria-hidden="true">or</div>
+        <button type="button" class="google-auth-btn" data-google-signin>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+        <button type="button" class="quiet-link" data-open-signin>Already have an account? Sign in</button>
       </form>
     </div>
   </div>

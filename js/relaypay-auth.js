@@ -85,6 +85,20 @@
     return input ? String(input.value || '').trim() : '';
   }
 
+  function signupFormError() {
+    const name = (document.getElementById('signup-name')?.value || '').trim();
+    const email = (document.getElementById('signup-email')?.value || '').trim();
+    const password = document.getElementById('signup-password')?.value || '';
+    const confirm = document.getElementById('signup-confirm')?.value || '';
+    const key = signupAccessKey();
+    if (name.length < 2) return 'Enter your name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email.';
+    if (password.length < 8) return 'Use at least 8 characters.';
+    if (password !== confirm) return 'Passwords do not match.';
+    if (!key) return 'Access key is invalid.';
+    return '';
+  }
+
   async function exchangeCredential({ credential, accessToken }) {
     const token = await csrfToken();
     const headers = { 'Content-Type': 'application/json' };
@@ -156,9 +170,12 @@
       return;
     }
     const inSignup = Boolean(button.closest('#signup-modal'));
-    if (inSignup && !signupAccessKey()) {
-      setError(button, 'Enter your access key first.');
-      return;
+    if (inSignup) {
+      const formError = signupFormError();
+      if (formError) {
+        setError(button, formError);
+        return;
+      }
     }
     await waitForGoogle();
     const oauth = window.google.accounts.oauth2;
