@@ -64,16 +64,18 @@
     </div>
 
     <div class="mobile-drawer" id="mobile-drawer">
-      <div class="mobile-drawer-links">
-        <a href="#plugin">Stripe Plugin</a>
-        <a href="#features">Capabilities</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#faqs">FAQ</a>
-      </div>
-      <div class="mobile-drawer-actions">
-        <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signup>Sign up</button>
-        <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signin>Sign in</button>
-        <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
+      <div class="mobile-drawer-inner">
+        <div class="mobile-drawer-links">
+          <a href="#plugin">Stripe Plugin</a>
+          <a href="#features">Capabilities</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faqs">FAQ</a>
+        </div>
+        <div class="mobile-drawer-actions">
+          <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signup>Sign up</button>
+          <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signin>Sign in</button>
+          <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
+        </div>
       </div>
     </div>
   </header>
@@ -97,7 +99,7 @@
             </h1>
 
             <p class="hero-lead">
-              Relay puts Stripe and PayPal on your store, then gives you a vendor dashboard to watch every order and cash out in crypto. One embed on the product page. USDT or BTC when you withdraw. No bank wires.
+              Relay puts Stripe and PayPal on your store, then gives you a vendor dashboard to watch every order and cash out in crypto. One embed on the product page. No bank wires.
             </p>
 
             <div class="hero-cta-row">
@@ -117,7 +119,7 @@
           </div>
 
           <!-- Right Column: Live Interactive Stripe Checkout Plugin Widget -->
-          <div class="sandbox-card" aria-label="Relay checkout">
+          <div class="sandbox-card glass" aria-label="Relay checkout">
             <div class="sandbox-body">
               <div class="checkout-head">
                 <div>
@@ -217,13 +219,25 @@
           </div>
 
           <div class="code-panel-body">
-            <pre class="code-block" id="code-display"></pre>
+            <div class="code-stage" id="code-stage">
+              <pre class="code-block is-active" data-code-panel="embed"></pre>
+              <pre class="code-block" data-code-panel="backend"></pre>
+              <pre class="code-block" data-code-panel="webhook"></pre>
+            </div>
             <div class="code-aside">
-              <div>
-                <h4 id="code-aside-title">Zero PCI burden on the vendor</h4>
-                <p id="code-aside-desc">
-                  The vendor adds the script and a buy button. The button opens checkout, Relay creates the Stripe or PayPal session, and the customer pays there.
-                </p>
+              <div class="code-aside-copy">
+                <div class="code-aside-slide is-active" data-code-aside="embed">
+                  <h4>Zero PCI burden on the vendor</h4>
+                  <p>The vendor adds the script and a buy button. The button opens checkout, Relay creates the Stripe or PayPal session, and the customer pays there.</p>
+                </div>
+                <div class="code-aside-slide" data-code-aside="backend">
+                  <h4>Relay creates the Checkout session</h4>
+                  <p>Relay calls Stripe with the platform key, tags the session with the vendor, the fee, and the vendor net, then sends the customer to Stripe.</p>
+                </div>
+                <div class="code-aside-slide" data-code-aside="webhook">
+                  <h4>Cryptographically verified fulfillment &amp; ledger</h4>
+                  <p>Stripe signs every webhook with STRIPE_WEBHOOK_SECRET. Relay verifies the signature, marks the order paid, dispatches an HMAC webhook to the vendor site, and queues their net payout.</p>
+                </div>
               </div>
               <div class="plugin-pay">
                 <div>
@@ -258,7 +272,7 @@
         </div>
 
         <div class="bento-top">
-          <article class="bento-card bento-card--accent glass">
+          <article class="bento-card glass">
             <div class="bento-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
             </div>
@@ -268,13 +282,13 @@
             </p>
           </article>
 
-          <article class="bento-card bento-card--sky glass">
+          <article class="bento-card glass">
             <div class="bento-icon" style="color: var(--sky);" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
             </div>
             <h3 class="bento-title">Vendor dashboard &amp; cashouts</h3>
             <p class="bento-desc">
-              Approved vendors get a login, a dashboard of their orders, and crypto cashouts in USDT or BTC. Questions about an application are handled on Discord.
+              Approved vendors get a login, a dashboard of their orders, and crypto cashouts. Questions about an application are handled on Discord.
             </p>
           </article>
         </div>
@@ -301,7 +315,7 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
             </div>
             <h3 class="bento-title">Automated Settlement Ledger</h3>
-            <p class="bento-desc">Every paid order lands in the vendor dashboard. The net balance is there to cash out in USDT or BTC.</p>
+            <p class="bento-desc">Every paid order lands in the vendor dashboard. The net balance is there to cash out in crypto.</p>
           </article>
         </div>
       </div>
@@ -356,7 +370,7 @@
           <ul class="included-list">
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Drop-in Stripe &amp; PayPal plugin</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Hosted Stripe Checkout — cards stay on Stripe</li>
-            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Crypto cashouts in USDT or BTC</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Crypto cashouts</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>HMAC fulfillment webhooks</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Vendor dashboard of paid orders</li>
             <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Discord help on applications</li>
@@ -474,7 +488,7 @@
        Modal 1: Sign In (with One-Click Temp Login Chips)
        ====================================================================== -->
   <div class="modal-backdrop" id="signin-modal" role="dialog" aria-modal="true" aria-labelledby="signin-title" hidden>
-    <div class="modal-card">
+    <div class="modal-card glass">
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="signin-title">Sign in to Relay</h3>
@@ -506,7 +520,7 @@
   </div>
 
   <div class="modal-backdrop" id="signup-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" hidden>
-    <div class="modal-card">
+    <div class="modal-card glass">
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="signup-title">Create your Relay account</h3>
@@ -554,7 +568,7 @@
        Modal 2: Vendor Application (Streams straight to Admin Panel)
        ====================================================================== -->
   <div class="modal-backdrop" id="apply-modal" role="dialog" aria-modal="true" aria-labelledby="apply-title" hidden>
-    <div class="modal-card modal-card--apply">
+    <div class="modal-card modal-card--apply glass">
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="apply-title">Apply as a Vendor</h3>
@@ -590,7 +604,7 @@
         </div>
         <div>
           <label class="field-label" for="app-about">What do you sell?</label>
-          <textarea id="app-about" class="textarea" minlength="90" maxlength="1200" required placeholder="Describe the store, what customers buy, and how you fulfill orders."></textarea>
+          <textarea id="app-about" class="textarea" rows="3" minlength="90" maxlength="1200" required placeholder="Describe the store, what customers buy, and how you fulfill orders."></textarea>
           <div class="char-count" id="about-count">0 / 90 minimum</div>
         </div>
         <div id="apply-error" class="alert-err" hidden></div>

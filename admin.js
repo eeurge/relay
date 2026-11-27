@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#kpi-net-label').textContent = 'Relay fee';
     $('#kpi-net-sub').textContent = isAdmin ? 'Platform margin' : 'Taken from your sales';
     $('#kpi-pending-label').textContent = isAdmin ? 'Cashouts waiting' : 'Ready to cash out';
-    $('#kpi-pending-sub').textContent = 'USDT / BTC';
+    $('#kpi-pending-sub').textContent = 'Crypto';
     $('#kpi-vendors-label').textContent = isAdmin ? 'Vendors' : 'Orders';
 
     const modeBadgeText = state.stripe.mode === 'live' ? 'LIVE' : state.stripe.mode === 'test' ? 'TEST KEYS' : 'NOT CONNECTED';

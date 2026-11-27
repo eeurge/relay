@@ -269,9 +269,6 @@ if (event.type === 'checkout.session.completed') {
   };
 
   let activeCodeKey = 'embed';
-  const codeDisplay = $('#code-display');
-  const codeTitle = $('#code-aside-title');
-  const codeDesc = $('#code-aside-desc');
 
   function highlightCode(code) {
     const escaped = code
@@ -292,15 +289,21 @@ if (event.type === 'checkout.session.completed') {
   }
 
   function renderCodeTab(key) {
+    if (!codeTabs[key]) return;
     activeCodeKey = key;
-    const item = codeTabs[key];
-    if (codeDisplay) codeDisplay.innerHTML = highlightCode(item.code);
-    if (codeTitle) codeTitle.textContent = item.title;
-    if (codeDesc) codeDesc.textContent = item.desc;
+    $$('[data-code-panel]').forEach((el) => el.classList.toggle('is-active', el.dataset.codePanel === key));
+    $$('[data-code-aside]').forEach((el) => el.classList.toggle('is-active', el.dataset.codeAside === key));
     $$('[data-code-tab]').forEach((b) => b.classList.toggle('is-active', b.dataset.codeTab === key));
   }
 
-  $$('[data-code-tab]').forEach((btn) => btn.addEventListener('click', () => renderCodeTab(btn.dataset.codeTab)));
+  Object.keys(codeTabs).forEach((key) => {
+    const panel = $(`[data-code-panel="${key}"]`);
+    if (panel) panel.innerHTML = highlightCode(codeTabs[key].code);
+  });
+  $$('[data-code-tab]').forEach((btn) => btn.addEventListener('click', () => {
+    if (btn.dataset.codeTab === activeCodeKey) return;
+    renderCodeTab(btn.dataset.codeTab);
+  }));
   renderCodeTab('embed');
 
   $('#copy-code-btn')?.addEventListener('click', async () => {
@@ -342,9 +345,14 @@ if (event.type === 'checkout.session.completed') {
 
   $$('[data-rail-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (btn.dataset.railTab === activePricingRail) return;
       activePricingRail = btn.dataset.railTab;
       $$('[data-rail-tab]').forEach((b) => b.classList.toggle('is-active', b === btn));
-      renderPricing();
+      $$('[data-tier-rate]').forEach((el) => { el.style.opacity = '0'; });
+      window.requestAnimationFrame(() => {
+        renderPricing();
+        $$('[data-tier-rate]').forEach((el) => { el.style.opacity = '1'; });
+      });
     });
   });
 
@@ -375,14 +383,30 @@ if (event.type === 'checkout.session.completed') {
   const signupModal = $('#signup-modal');
   const applyModal = $('#apply-modal');
 
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let modalHideTimer = 0;
+
   function openModal(m) {
     if (!m) return;
+    window.clearTimeout(modalHideTimer);
+    [signinModal, signupModal, applyModal].forEach((other) => {
+      if (!other || other === m) return;
+      other.classList.remove('is-open');
+      other.hidden = true;
+    });
     m.hidden = false;
     document.body.style.overflow = 'hidden';
+    requestAnimationFrame(() => m.classList.add('is-open'));
   }
 
   function closeModals() {
-    [signinModal, signupModal, applyModal].forEach((m) => { if (m) m.hidden = true; });
+    window.clearTimeout(modalHideTimer);
+    [signinModal, signupModal, applyModal].forEach((m) => m?.classList.remove('is-open'));
+    const hideAll = () => {
+      [signinModal, signupModal, applyModal].forEach((m) => { if (m) m.hidden = true; });
+    };
+    if (reduceMotion) hideAll();
+    else modalHideTimer = window.setTimeout(hideAll, 220);
     document.body.style.overflow = '';
   }
 
@@ -478,7 +502,6 @@ if (event.type === 'checkout.session.completed') {
 
   // Vendor Application
   $$('[data-open-apply]').forEach((b) => b.addEventListener('click', () => {
-    closeModals();
     $('#apply-form').hidden = false;
     $('#apply-result').hidden = true;
     $('#apply-error').hidden = true;
