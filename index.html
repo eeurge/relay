@@ -65,16 +65,18 @@
 
     <div class="mobile-drawer" id="mobile-drawer">
       <div class="mobile-drawer-inner">
-        <div class="mobile-drawer-links">
-          <a href="#plugin">Stripe Plugin</a>
-          <a href="#features">Capabilities</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#faqs">FAQ</a>
-        </div>
-        <div class="mobile-drawer-actions">
-          <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signup>Sign up</button>
-          <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signin>Sign in</button>
-          <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
+        <div class="mobile-drawer-body">
+          <div class="mobile-drawer-links">
+            <a href="#plugin">Stripe Plugin</a>
+            <a href="#features">Capabilities</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#faqs">FAQ</a>
+          </div>
+          <div class="mobile-drawer-actions">
+            <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signup>Sign up</button>
+            <button type="button" class="btn btn--secondary btn--full" data-guest-only data-open-signin>Sign in</button>
+            <button type="button" class="btn btn--primary btn--full" data-open-apply>Apply</button>
+          </div>
         </div>
       </div>
     </div>
@@ -214,17 +216,17 @@
               <button type="button" class="code-tab" data-code-tab="webhook">3. Webhook &amp; Settlement</button>
             </div>
             <div style="display:flex; gap:8px;">
-              <button type="button" class="btn btn--secondary btn--sm" id="copy-code-btn">Copy snippet</button>
+              <button type="button" class="btn btn--secondary btn--sm btn--glass" id="copy-code-btn">Copy snippet</button>
             </div>
           </div>
 
           <div class="code-panel-body">
-            <div class="code-stage" id="code-stage">
+            <div class="code-stage glass" id="code-stage">
               <pre class="code-block is-active" data-code-panel="embed"></pre>
               <pre class="code-block" data-code-panel="backend"></pre>
               <pre class="code-block" data-code-panel="webhook"></pre>
             </div>
-            <div class="code-aside">
+            <div class="code-aside glass">
               <div class="code-aside-copy">
                 <div class="code-aside-slide is-active" data-code-aside="embed">
                   <h4>Zero PCI burden on the vendor</h4>
@@ -240,19 +242,19 @@
                 </div>
               </div>
               <div class="plugin-pay">
-                <div>
+                <div class="plugin-field">
                   <label class="field-label" for="plugin-amount">Amount (USD)</label>
                   <div class="amount-field">
                     <span aria-hidden="true">$</span>
-                    <input id="plugin-amount" class="input amount-input" type="number" value="49" min="1" max="50000" inputmode="decimal" />
+                    <input id="plugin-amount" class="input amount-input" type="number" value="0" min="0" max="50000" step="1" inputmode="decimal" />
                   </div>
                 </div>
-                <div>
+                <div class="plugin-field">
                   <label class="field-label" for="plugin-email">Email</label>
                   <input id="plugin-email" class="input" type="email" placeholder="name@email.com" autocomplete="email" />
                 </div>
                 <p id="plugin-stripe-status" class="plugin-pay-status"></p>
-                <button type="button" class="btn btn--secondary btn--full" data-open-apply>Generate a vendor embed key</button>
+                <button type="button" class="btn btn--secondary btn--full btn--glass" data-open-apply>Generate a vendor embed key</button>
               </div>
             </div>
           </div>

@@ -122,6 +122,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sbAmount?.addEventListener('input', syncSandboxPrice);
 
+  const pluginAmount = $('#plugin-amount');
+  const pluginStatus = $('#plugin-stripe-status');
+  pluginAmount?.addEventListener('input', () => {
+    const val = Number(pluginAmount.value);
+    if (!Number.isFinite(val) || val < 1) {
+      if (pluginStatus) pluginStatus.textContent = pluginAmount.value === '' || val === 0
+        ? ''
+        : 'Enter an amount of at least $1.';
+      return;
+    }
+    if (pluginStatus) pluginStatus.textContent = '';
+    if (sbAmount) {
+      sbAmount.value = String(val);
+      syncSandboxPrice();
+    }
+  });
+
   $$('[data-sb-rail]').forEach((btn) => {
     btn.addEventListener('click', () => {
       sbRail = btn.dataset.sbRail;
@@ -132,7 +149,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   async function openHomepageCheckout() {
-    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
+    const amountUsd = Number(sbAmount?.value);
+    if (!Number.isFinite(amountUsd) || amountUsd < 1) {
+      if (sbConsole) sbConsole.textContent = 'Enter an amount of at least $1.';
+      return;
+    }
     const email = $('#sb-email')?.value?.trim() || '';
     const rail = sbRail === 'apple' ? 'wallets' : sbRail;
     if (sbPayBtn) sbPayBtn.disabled = true;
@@ -170,6 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   sbPayBtn?.addEventListener('click', () => {
+    const pluginVal = Number($('#plugin-amount')?.value);
+    if (Number.isFinite(pluginVal) && pluginVal >= 1 && sbAmount) {
+      sbAmount.value = String(pluginVal);
+      syncSandboxPrice();
+    }
     openHomepageCheckout();
   });
 
@@ -288,6 +314,14 @@ if (event.type === 'checkout.session.completed') {
     });
   }
 
+  function renderCodeLines(code) {
+    const highlighted = highlightCode(code);
+    const lines = highlighted.split('\n');
+    return lines.map((line, i) => (
+      `<span class="code-line"><span class="code-ln" aria-hidden="true">${i + 1}</span><span class="code-text">${line || ' '}</span></span>`
+    )).join('');
+  }
+
   function renderCodeTab(key) {
     if (!codeTabs[key]) return;
     activeCodeKey = key;
@@ -298,7 +332,7 @@ if (event.type === 'checkout.session.completed') {
 
   Object.keys(codeTabs).forEach((key) => {
     const panel = $(`[data-code-panel="${key}"]`);
-    if (panel) panel.innerHTML = highlightCode(codeTabs[key].code);
+    if (panel) panel.innerHTML = renderCodeLines(codeTabs[key].code);
   });
   $$('[data-code-tab]').forEach((btn) => btn.addEventListener('click', () => {
     if (btn.dataset.codeTab === activeCodeKey) return;
