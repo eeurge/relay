@@ -142,7 +142,13 @@
                   <input type="email" id="sb-email" class="input" placeholder="you@email.com" autocomplete="email" />
                 </div>
               </div>
-              <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">Pay $49.00</button>
+              <button type="button" class="btn btn--primary btn--lg btn--full" id="sb-pay-btn">
+                <svg class="pay-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="5" y="11" width="14" height="10" rx="2" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
+                <span id="sb-pay-label">Pay $49.00</span>
+              </button>
               <div class="sandbox-console" id="sb-console">Pay opens a live Checkout page.</div>
             </div>
           </div>

@@ -96,12 +96,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const sbAmount = $('#sb-amount');
   const sbPriceDisplay = $('#sb-price-display');
   const sbPayBtn = $('#sb-pay-btn');
+  const sbPayLabel = $('#sb-pay-label');
   const sbConsole = $('#sb-console');
 
   function syncSandboxPrice() {
     const val = Math.max(1, Number(sbAmount?.value) || 49);
     if (sbPriceDisplay) sbPriceDisplay.textContent = formatUSD(val);
-    if (sbPayBtn) sbPayBtn.textContent = `Pay ${formatUSD(val)}`;
+    if (sbPayLabel) sbPayLabel.textContent = `Pay ${formatUSD(val)}`;
   }
 
   sbAmount?.addEventListener('input', syncSandboxPrice);

@@ -413,16 +413,28 @@ svg { display: block; }
 
 /* Right Column: Live Stripe Plugin Sandbox Widget */
 .sandbox-card {
-  border-radius: 28px;
-  background:
-    radial-gradient(120% 80% at 50% -10%, rgba(52, 211, 153, 0.16), transparent 58%),
-    linear-gradient(180deg, #17241e 0%, #0c1411 48%, #0a0f0d 100%);
-  border: 1px solid rgba(110, 231, 183, 0.18);
+  position: relative;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #0b0f0d 0%, #060807 100%);
+  border: 1px solid rgba(16, 185, 129, 0.32);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.45),
-    inset 0 1px 0 rgba(167, 243, 208, 0.22),
-    inset 0 0 42px rgba(16, 185, 129, 0.08);
+    0 0 0 1px rgba(16, 185, 129, 0.08),
+    0 0 36px rgba(16, 185, 129, 0.28),
+    0 22px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(52, 211, 153, 0.14);
   overflow: hidden;
+}
+.sandbox-card::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.045) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 72%);
+  opacity: 0.7;
 }
 
 .sandbox-top {
@@ -453,7 +465,7 @@ svg { display: block; }
   color: var(--accent-text);
 }
 
-.sandbox-body { padding: 22px 22px 18px; }
+.sandbox-body { position: relative; z-index: 1; padding: 22px 22px 18px; }
 
 .checkout-head {
   display: flex;
@@ -463,10 +475,11 @@ svg { display: block; }
   margin-bottom: 18px;
 }
 .checkout-kicker {
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #8b93a7;
+  color: #6ee7b7;
   margin-bottom: 4px;
 }
 .sandbox-store-name { font-size: 1.35rem; font-weight: 650; letter-spacing: -0.03em; color: #fff; }
@@ -486,13 +499,12 @@ svg { display: block; }
 .sandbox-methods {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 8px;
   margin-bottom: 16px;
-  padding: 5px;
-  border-radius: 999px;
-  background: rgba(6, 10, 9, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
 }
 
 .sandbox-method {
@@ -502,23 +514,25 @@ svg { display: block; }
   gap: 6px;
   min-height: 42px;
   padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
-  font-size: 0.8rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: #9aa3b5;
-  transition: background 150ms var(--ease), color 150ms var(--ease), box-shadow 150ms var(--ease);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #080a09;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #8b93a7;
+  transition: background 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
 }
 
 .pay-mark { width: 18px; height: 18px; display: block; flex-shrink: 0; }
 .pay-mark--wide { width: 22px; height: 22px; }
 
 .sandbox-method.is-active {
-  color: #0b1220;
-  background: #f4f7fb;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), 0 6px 14px rgba(0, 0, 0, 0.12);
+  color: #ecfdf5;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
+  box-shadow: inset 0 0 0 1px rgba(16, 185, 129, 0.25);
 }
 
 .sandbox-inputs {
@@ -528,25 +542,32 @@ svg { display: block; }
   margin-bottom: 14px;
 }
 .sandbox-card .field-label {
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8b93a7;
+  color: #7b8494;
 }
 .sandbox-card .input {
-  height: 48px;
-  border-radius: 14px;
-  background: rgba(6, 10, 9, 0.78);
-  border-color: rgba(167, 243, 208, 0.12);
+  height: 46px;
+  border-radius: 10px;
+  background: #050706;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 .sandbox-card input[type="number"] { appearance: textfield; }
 .sandbox-card input[type="number"]::-webkit-inner-spin-button,
 .sandbox-card input[type="number"]::-webkit-outer-spin-button { appearance: none; margin: 0; }
 .sandbox-card #sb-pay-btn {
-  height: 50px;
-  border-radius: 14px;
-  box-shadow: none;
-  font-weight: 650;
+  height: 48px;
+  border-radius: 10px;
+  gap: 8px;
+  font-weight: 700;
+  box-shadow: 0 0 22px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.sandbox-card #sb-pay-btn .pay-lock {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .field-label {
@@ -866,8 +887,7 @@ svg { display: block; }
 }
 
 .price-card {
-  padding: 36px 28px 40px;
-  min-height: 760px;
+  padding: 28px 26px 28px;
   border-radius: var(--radius-xl);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -885,8 +905,8 @@ svg { display: block; }
 .price-name { font-size: 1.125rem; font-weight: 700; color: #fff; }
 .price-num { font-size: 2.25rem; font-weight: 700; color: #fff; letter-spacing: -0.03em; font-family: var(--font-mono); }
 .price-unit { font-size: 0.8125rem; color: var(--text-muted); margin-left: 6px; }
-.price-desc { font-size: 0.875rem; color: var(--text-muted); margin: 12px 0 20px; min-height: 72px; line-height: 1.55; }
-.price-list { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 22px; border-top: 1px solid var(--border-subtle); }
+.price-desc { font-size: 0.875rem; color: var(--text-muted); margin: 10px 0 16px; line-height: 1.5; }
+.price-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-subtle); }
 .price-list li { display: flex; align-items: flex-start; gap: 9px; font-size: 0.875rem; color: var(--text-body); line-height: 1.45; }
 .price-list svg { color: var(--accent-text); flex-shrink: 0; margin-top: 2px; }
 
