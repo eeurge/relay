@@ -105,11 +105,12 @@ function helmetMiddleware() {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", 'https://accounts.google.com'],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
-        imgSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'", 'https://formsubmit.co', 'https://www.formsubmit.co'],
+        imgSrc: ["'self'", 'data:', 'https://www.gstatic.com', 'https://lh3.googleusercontent.com'],
+        connectSrc: ["'self'", 'https://formsubmit.co', 'https://www.formsubmit.co', 'https://api.relaypayus.shop', 'https://accounts.google.com'],
+        frameSrc: ["'self'", 'https://accounts.google.com'],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"]

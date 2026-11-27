@@ -56,6 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (data.authenticated) user = data.user;
     } catch {}
+    if (!user && window.RelaypayAuth && typeof window.RelaypayAuth.getMe === 'function') {
+      try {
+        const google = await window.RelaypayAuth.getMe();
+        if (google && google.authenticated && google.user) {
+          user = { name: google.user.name, email: google.user.email, role: 'member' };
+        }
+      } catch {}
+    }
     $$('[data-guest-only]').forEach((el) => { el.hidden = Boolean(user); });
     const account = $('#home-account');
     if (account) account.hidden = !user;
@@ -66,6 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const settings = $('#home-account-settings');
     if (settings) settings.hidden = false;
   }
+
+  window.relaypayOnGoogleSignIn = async function relaypayOnGoogleSignIn() {
+    closeModals();
+    await refreshHomeSession();
+  };
 
   $('#home-account-btn')?.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -84,6 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function homeSignOut(openSignIn) {
     closeHomeAccount();
     await fetch('/api/auth/logout', { method: 'POST' });
+    if (window.RelaypayAuth && typeof window.RelaypayAuth.signOut === 'function') {
+      try { await window.RelaypayAuth.signOut(); } catch {}
+    }
     await refreshHomeSession();
     if (openSignIn) $('#header-signin-btn')?.click();
   }
