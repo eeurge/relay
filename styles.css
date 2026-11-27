@@ -191,6 +191,18 @@ svg { display: block; }
 
 .header-actions { display: flex; align-items: center; gap: 14px; }
 
+.discord-link {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: #fff;
+  background: #5865f2;
+}
+.discord-link:hover { background: #4752c4; }
+
 .quiet-link {
   background: none;
   border: 0;

@@ -107,7 +107,7 @@ function createInitialStore() {
         paypalMarkup: 1.0,
         fixedFee: 0.3
       },
-      discordInviteUrl: 'https://discord.gg/your-invite-code'
+      discordInviteUrl: 'https://discord.gg/ky3qukfrA'
     },
     users: [
       makeUserRecord({
@@ -138,6 +138,10 @@ function createInitialStore() {
 }
 
 function ensureVendorLogin(store) {
+  store.settings = store.settings || {};
+  if (!store.settings.discordInviteUrl || String(store.settings.discordInviteUrl).includes('your-invite-code')) {
+    store.settings.discordInviteUrl = 'https://discord.gg/ky3qukfrA';
+  }
   store.orders = (store.orders || []).filter((order) => !String(order.id || '').startsWith('RL-EX') && !String(order.stripeRef || '').startsWith('pi_example_'));
   store.payouts = (store.payouts || []).filter((payout) => payout.id !== 'PO-EX1' && !String(payout.id || '').startsWith('PO-EX'));
   store.vendors = (store.vendors || []).filter((vendor) => vendor.id !== 'vnd_example' && vendor.name !== 'Example Store');
