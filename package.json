@@ -1,7 +1,7 @@
 {
   "name": "relay-payments",
   "version": "1.0.0",
-  "description": "Relay — Managed Stripe & PayPal payment middleman platform with vendor checkout plugin, sign-in, and admin control plane.",
+  "description": "Relay â€” Managed Stripe & PayPal payment middleman platform with vendor checkout plugin, sign-in, and admin control plane.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "express": "^4.21.2",
+    "mysql2": "^3.24.6",
     "stripe": "^17.5.0"
   }
 }

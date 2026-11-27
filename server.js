@@ -176,13 +176,24 @@ function loadStore() {
   return ready;
 }
 
-function saveStore(data) {
+function saveStoreFile(data) {
   const tmp = `${STORE_PATH}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
   fs.renameSync(tmp, STORE_PATH);
 }
 
-let store = loadStore();
+const database = require('./db');
+let useDatabase = false;
+
+function saveStore(data) {
+  if (useDatabase) {
+    database.queueSave(data);
+    return;
+  }
+  saveStoreFile(data);
+}
+
+let store = null;
 
 // Active sessions: token -> { userId, expiresAt }. Saved with the store so a restart keeps people signed in.
 const sessions = new Map();
@@ -205,8 +216,6 @@ function persistSessions() {
   store.sessions = saved;
   saveStore(store);
 }
-
-loadSessions();
 
 function parseCookies(req) {
   const header = req.headers.cookie || '';
@@ -597,7 +606,7 @@ app.post('/api/public/apply', (req, res) => {
     website: String(website).slice(0, 140),
     email: mail,
     discord: String(discord).replace(/^@/, '').slice(0, 80),
-    contact: `${mail} · ${String(discord).replace(/^@/, '')}`,
+    contact: `${mail} Â· ${String(discord).replace(/^@/, '')}`,
     description: about.slice(0, 1200),
     tier,
     rate,
@@ -616,7 +625,7 @@ app.post('/api/public/apply', (req, res) => {
     ok: true,
     inbox: APPLY_INBOX,
     mail: {
-      _subject: `Relay vendor application — ${vendor.name}`,
+      _subject: `Relay vendor application â€” ${vendor.name}`,
       _template: 'table',
       _replyto: vendor.email,
       store: vendor.name,
@@ -995,7 +1004,7 @@ function buildChart7d(orders) {
 }
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, service: 'relay' });
+  res.json({ ok: true, service: 'relay', storage: useDatabase ? 'mysql' : 'file' });
 });
 
 // Serve static frontend files
@@ -1010,7 +1019,28 @@ app.get(['/admin', '/admin.html'], (req, res) => {
 
 app.use(express.static(__dirname, { extensions: ['html'] }));
 
-app.listen(PORT, '0.0.0.0', () => {
-  const stripeMode = !hasRealStripeKey ? 'sandbox' : (STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test');
-  console.log(`Relay server listening at ${BASE_URL} (Stripe mode: ${stripeMode})`);
-});
+async function start() {
+  if (database.enabled()) {
+    try {
+      await database.init();
+      useDatabase = true;
+      const existing = await database.read();
+      store = ensureVendorLogin(existing || createInitialStore());
+      await database.writeNow(store);
+    } catch (err) {
+      console.error('Could not open the MySQL database. Wait until Aiven says Running, then set DATABASE_URL on the relay web service to the copied Service URI.');
+      console.error(err.message);
+      process.exit(1);
+    }
+  } else {
+    store = loadStore();
+    console.log('Account storage: data/store.json');
+  }
+  loadSessions();
+  app.listen(PORT, '0.0.0.0', () => {
+    const stripeMode = !hasRealStripeKey ? 'sandbox' : (STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test');
+    console.log(`Relay server listening at ${BASE_URL} (Stripe mode: ${stripeMode})`);
+  });
+}
+
+start();
