@@ -76,8 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.relaypayOnGoogleSignIn = async function relaypayOnGoogleSignIn() {
-    closeModals();
-    await refreshHomeSession();
+    window.location.href = '/dashboard';
   };
 
   $('#home-account-btn')?.addEventListener('click', (event) => {
@@ -409,10 +408,61 @@ if (event.type === 'checkout.session.completed') {
     setTimeout(() => $('#login-email')?.focus(), 50);
   }));
 
-  $$('[data-open-signup]').forEach((b) => b.addEventListener('click', () => {
-    $('#signup-error').hidden = true;
-    openModal(signupModal);
+  function showSignupPanel(which) {
+    const isKey = which !== 'account';
+    const keyPanel = $('#signup-panel-key');
+    const accountPanel = $('#signup-panel-account');
+    const keyTab = $('#signup-tab-key');
+    const accountTab = $('#signup-tab-account');
+    if (keyPanel) keyPanel.hidden = !isKey;
+    if (accountPanel) accountPanel.hidden = isKey;
+    keyTab?.classList.toggle('is-active', isKey);
+    accountTab?.classList.toggle('is-active', !isKey);
+    keyTab?.setAttribute('aria-selected', String(isKey));
+    accountTab?.setAttribute('aria-selected', String(!isKey));
+  }
+
+  function signupKeyValue() {
+    return ($('#signup-access-key')?.value || '').trim();
+  }
+
+  $('#signup-key-continue')?.addEventListener('click', () => {
+    const errEl = $('#signup-key-error');
+    if (!signupKeyValue()) {
+      if (errEl) {
+        errEl.textContent = 'Enter your access key.';
+        errEl.hidden = false;
+      }
+      return;
+    }
+    if (errEl) errEl.hidden = true;
+    showSignupPanel('account');
     setTimeout(() => $('#signup-name')?.focus(), 50);
+  });
+
+  $('#signup-tab-key')?.addEventListener('click', () => showSignupPanel('key'));
+  $('#signup-tab-account')?.addEventListener('click', () => {
+    const errEl = $('#signup-key-error');
+    if (!signupKeyValue()) {
+      if (errEl) {
+        errEl.textContent = 'Enter your access key.';
+        errEl.hidden = false;
+      }
+      showSignupPanel('key');
+      return;
+    }
+    if (errEl) errEl.hidden = true;
+    showSignupPanel('account');
+  });
+
+  $$('[data-open-signup]').forEach((b) => b.addEventListener('click', () => {
+    const signupErr = $('#signup-error');
+    const keyErr = $('#signup-key-error');
+    if (signupErr) signupErr.hidden = true;
+    if (keyErr) keyErr.hidden = true;
+    showSignupPanel('key');
+    openModal(signupModal);
+    setTimeout(() => $('#signup-access-key')?.focus(), 50);
   }));
 
   $$('[data-fill-login]').forEach((chip) => {
@@ -448,6 +498,17 @@ if (event.type === 'checkout.session.completed') {
     e.preventDefault();
     const errEl = $('#signup-error');
     errEl.hidden = true;
+    if (!signupKeyValue()) {
+      errEl.textContent = 'Access key is invalid.';
+      errEl.hidden = false;
+      showSignupPanel('key');
+      return;
+    }
+    if (($('#signup-name').value || '').trim().length < 2) {
+      errEl.textContent = 'Enter your name.';
+      errEl.hidden = false;
+      return;
+    }
     if ($('#signup-password').value !== $('#signup-confirm').value) {
       errEl.textContent = 'Passwords do not match.';
       errEl.hidden = false;
@@ -461,7 +522,8 @@ if (event.type === 'checkout.session.completed') {
           name: $('#signup-name').value.trim(),
           email: $('#signup-email').value.trim(),
           password: $('#signup-password').value,
-          confirmPassword: $('#signup-confirm').value
+          confirmPassword: $('#signup-confirm').value,
+          accessKey: signupKeyValue()
         })
       });
       const data = await res.json();

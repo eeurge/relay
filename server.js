@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const security = require('./security');
+const googleAuth = require('./google-auth');
 
 // Load simple .env file if present (zero extra dependencies)
 const envPath = path.join(__dirname, '.env');
@@ -729,6 +730,9 @@ app.post('/api/auth/signup', authLimiter, security.parseBody(security.schemas.si
   if (cleanPassword !== String(confirmPassword)) {
     return res.status(400).json({ error: 'Passwords do not match.' });
   }
+  if (!googleAuth.accessKeyMatches(req.body?.accessKey)) {
+    return res.status(403).json({ error: 'Access key is invalid.' });
+  }
   if (store.users.some((user) => user.email === normalizedEmail)) {
     return res.status(409).json({ error: 'An account with that email already exists.' });
   }
@@ -750,6 +754,58 @@ app.post('/api/auth/signup', authLimiter, security.parseBody(security.schemas.si
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role }
   });
+});
+
+app.get('/api/auth/google-config', (_req, res) => {
+  res.json({ googleClientId: googleAuth.googleClientId() });
+});
+
+app.post('/api/auth/google', authLimiter, security.parseBody(security.schemas.google), async (req, res) => {
+  try {
+    const profile = await googleAuth.verifyGoogleUser({
+      credential: req.body?.credential,
+      accessToken: req.body?.accessToken
+    });
+    let user = store.users.find((item) => (
+      item.active && (item.googleSub === profile.googleSub || item.email === profile.email)
+    ));
+    if (!user) {
+      if (!googleAuth.accessKeyMatches(req.body?.accessKey)) {
+        return res.status(403).json({ error: 'Access key is invalid.' });
+      }
+      user = makeUserRecord({
+        id: `usr_${crypto.randomBytes(6).toString('hex')}`,
+        name: profile.name,
+        email: profile.email,
+        password: crypto.randomBytes(24).toString('hex'),
+        role: 'member',
+        temp: false,
+        expiresAt: null,
+        note: 'Google sign-in'
+      });
+      user.googleSub = profile.googleSub;
+      user.picture = profile.picture;
+      store.users.push(user);
+      saveStore(store);
+    } else if (!user.googleSub) {
+      user.googleSub = profile.googleSub;
+      saveStore(store);
+    }
+    try {
+      await database.upsertGoogleIdentity(profile);
+    } catch {}
+    const token = startSession(req, res, user);
+    res.json({
+      ok: true,
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+    });
+  } catch (err) {
+    const status = Number(err.status) || 401;
+    res.status(status).json({
+      error: err.status && err.message ? err.message : 'Google sign-in failed.'
+    });
+  }
 });
 
 app.post('/api/auth/login', authLimiter, security.parseBody(security.schemas.login), (req, res) => {

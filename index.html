@@ -128,9 +128,18 @@
               </div>
               <p class="checkout-method-label">Choose Payment Method</p>
               <div class="sandbox-methods" role="tablist" aria-label="Payment methods">
-                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">Stripe</button>
-                <button type="button" class="sandbox-method" data-sb-rail="paypal">PayPal</button>
-                <button type="button" class="sandbox-method" data-sb-rail="apple">Apple Pay</button>
+                <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.48 9.88c-1.63-.6-2.51-1.07-2.51-1.8 0-.62.51-.98 1.42-.98 1.67 0 3.38.64 4.56 1.22l.67-4.11C16.43 3.53 14.59 3.07 12.52 3.07c-1.16 0-2.23.27-3.1.79-1.18.7-1.76 1.66-1.76 2.67 0 2.54 2.47 3.43 4.5 4.17 1.67.58 2.51 1.02 2.51 1.87 0 .73-.63 1.16-1.76 1.16-1.41 0-3.79-.74-5.3-1.37l-.67 4.16c1.47.66 3.92 1.25 6.08 1.25 4.26 0 7.01-2.08 7.01-5.67 0-2.08-1.01-3.6-4.23-4.89z"/></svg>
+                  Stripe
+                </button>
+                <button type="button" class="sandbox-method" data-sb-rail="paypal">
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.08 21.34H2.47a.64.64 0 0 1-.63-.74L4.94.9A1.07 1.07 0 0 1 6 0h7.46c2.57 0 4.58.54 5.69 1.81 1.01 1.15 1.3 2.61 1.3 4.29 0 .15 0 .31-.02.46-.67 5.21-4.64 8.08-10.14 8.08H8.22a1.07 1.07 0 0 0-1.05.9l-1.09 5.8zm6.32-12.1c2.84 0 4.1-1.37 4.48-4.12.14-1.02.02-1.73-.43-2.22-.5-.54-1.4-.82-2.62-.82H11.4L10.2 9.24h3.2z"/></svg>
+                  PayPal
+                </button>
+                <button type="button" class="sandbox-method" data-sb-rail="apple">
+                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.64c0-1.64.86-2.9 2.3-3.64-.86-1.24-2.16-1.92-3.86-2.04-1.62-.12-3.4.96-4.04.96-.7 0-2.26-.9-3.72-.88-1.9.04-3.66 1.12-4.62 2.84-1.98 3.44-.5 8.52 1.4 11.3.94 1.36 2.04 2.88 3.5 2.82 1.4-.06 1.92-.9 3.62-.9 1.68 0 2.16.9 3.64.86 1.52-.04 2.46-1.36 3.38-2.74.66-.98 1.16-2.06 1.5-3.18-1.78-.68-2.1-2.12-2.1-3.4zM14.7 5.16c.86-1.02 1.4-2.44 1.24-3.86-1.2.06-2.64.8-3.5 1.82-.78.9-1.48 2.36-1.3 3.74 1.32.1 2.68-.68 3.56-1.7z"/></svg>
+                  Apple Pay
+                </button>
               </div>
               <div class="sandbox-inputs">
                 <div>
@@ -505,8 +514,8 @@
         <div id="signin-error" class="alert-err" hidden></div>
         <button type="submit" class="btn btn--primary btn--lg btn--full">Sign in &amp; open dashboard</button>
         <div class="auth-split" aria-hidden="true">or</div>
-        <button type="button" class="btn btn--secondary btn--lg btn--full google-auth-btn" data-google-signin>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.6h5.1c-.2 1.2-1.5 3.6-5.1 3.6-3.1 0-5.6-2.6-5.6-5.7S8.9 6 12 6c1.8 0 3 .7 3.7 1.4l2.5-2.4C16.7 3.5 14.5 2.5 12 2.5 6.9 2.5 2.8 6.6 2.8 11.7S6.9 20.9 12 20.9c5.2 0 8.6-3.6 8.6-8.7 0-.6 0-1-.1-1.5H12z"/><path fill="#4285F4" d="M20.6 12.2c0-.5-.1-.9-.1-1.5H12v3.6h5.1c-.2 1.1-.9 2.1-1.9 2.7v2.2h3.1c1.8-1.7 2.3-4.1 2.3-7z"/><path fill="#FBBC05" d="M12 21c2.5 0 4.6-.8 6.1-2.2l-3.1-2.2c-.8.6-1.9.9-3 .9-2.3 0-4.3-1.6-5-3.7H3.8v2.3C5.3 18.9 8.4 21 12 21z"/><path fill="#34A853" d="M7 13.8c-.2-.6-.3-1.2-.3-1.8s.1-1.2.3-1.8V7.9H3.8A9.2 9.2 0 0 0 2.8 12c0 1.5.4 2.9 1 4.1l3.2-2.3z"/></svg>
+        <button type="button" class="google-auth-btn" data-google-signin>
+          <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
           Continue with Google
         </button>
         <button type="button" class="quiet-link" data-open-signup>Create an account</button>
@@ -519,35 +528,49 @@
       <div class="modal-head">
         <div>
           <h3 class="modal-title" id="signup-title">Create your Relay account</h3>
-          <p class="modal-sub">Use this email and password the next time you sign in.</p>
+          <p class="modal-sub">An access key is required before you can create an account.</p>
         </div>
         <button type="button" class="btn btn--ghost btn--sm" data-close-modal aria-label="Close">&times;</button>
       </div>
+      <div class="auth-tabs" role="tablist" aria-label="Sign up steps">
+        <button type="button" class="auth-tab is-active" id="signup-tab-key" data-signup-tab="key" role="tab" aria-selected="true">Access key</button>
+        <button type="button" class="auth-tab" id="signup-tab-account" data-signup-tab="account" role="tab" aria-selected="false">Account</button>
+      </div>
       <form id="signup-form" class="form-stack">
-        <div>
-          <label class="field-label" for="signup-name">Name</label>
-          <input type="text" id="signup-name" class="input" placeholder="Your name" required maxlength="80" />
+        <div id="signup-panel-key" data-signup-panel="key">
+          <div>
+            <label class="field-label" for="signup-access-key">Access key</label>
+            <input type="text" id="signup-access-key" class="input" placeholder="Enter your access key" autocomplete="off" spellcheck="false" required />
+          </div>
+          <div id="signup-key-error" class="alert-err" hidden></div>
+          <button type="button" class="btn btn--primary btn--lg btn--full" id="signup-key-continue">Continue</button>
         </div>
-        <div>
-          <label class="field-label" for="signup-email">Email</label>
-          <input type="email" id="signup-email" class="input" placeholder="you@email.com" required />
+        <div id="signup-panel-account" data-signup-panel="account" hidden>
+          <div>
+            <label class="field-label" for="signup-name">Name</label>
+            <input type="text" id="signup-name" class="input" placeholder="Your name" maxlength="80" />
+          </div>
+          <div>
+            <label class="field-label" for="signup-email">Email</label>
+            <input type="email" id="signup-email" class="input" placeholder="you@email.com" />
+          </div>
+          <div>
+            <label class="field-label" for="signup-password">Password</label>
+            <input type="password" id="signup-password" class="input" placeholder="At least 8 characters" minlength="8" />
+          </div>
+          <div>
+            <label class="field-label" for="signup-confirm">Confirm password</label>
+            <input type="password" id="signup-confirm" class="input" placeholder="Type it again" minlength="8" />
+          </div>
+          <div id="signup-error" class="alert-err" hidden></div>
+          <button type="submit" class="btn btn--primary btn--lg btn--full">Create account</button>
+          <div class="auth-split" aria-hidden="true">or</div>
+          <button type="button" class="google-auth-btn" data-google-signin>
+            <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+          </button>
+          <button type="button" class="quiet-link" data-open-signin>Already have an account? Sign in</button>
         </div>
-        <div>
-          <label class="field-label" for="signup-password">Password</label>
-          <input type="password" id="signup-password" class="input" placeholder="At least 8 characters" required minlength="8" />
-        </div>
-        <div>
-          <label class="field-label" for="signup-confirm">Confirm password</label>
-          <input type="password" id="signup-confirm" class="input" placeholder="Type it again" required minlength="8" />
-        </div>
-        <div id="signup-error" class="alert-err" hidden></div>
-        <button type="submit" class="btn btn--primary btn--lg btn--full">Create account</button>
-        <div class="auth-split" aria-hidden="true">or</div>
-        <button type="button" class="btn btn--secondary btn--lg btn--full google-auth-btn" data-google-signin>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.6h5.1c-.2 1.2-1.5 3.6-5.1 3.6-3.1 0-5.6-2.6-5.6-5.7S8.9 6 12 6c1.8 0 3 .7 3.7 1.4l2.5-2.4C16.7 3.5 14.5 2.5 12 2.5 6.9 2.5 2.8 6.6 2.8 11.7S6.9 20.9 12 20.9c5.2 0 8.6-3.6 8.6-8.7 0-.6 0-1-.1-1.5H12z"/><path fill="#4285F4" d="M20.6 12.2c0-.5-.1-.9-.1-1.5H12v3.6h5.1c-.2 1.1-.9 2.1-1.9 2.7v2.2h3.1c1.8-1.7 2.3-4.1 2.3-7z"/><path fill="#FBBC05" d="M12 21c2.5 0 4.6-.8 6.1-2.2l-3.1-2.2c-.8.6-1.9.9-3 .9-2.3 0-4.3-1.6-5-3.7H3.8v2.3C5.3 18.9 8.4 21 12 21z"/><path fill="#34A853" d="M7 13.8c-.2-.6-.3-1.2-.3-1.8s.1-1.2.3-1.8V7.9H3.8A9.2 9.2 0 0 0 2.8 12c0 1.5.4 2.9 1 4.1l3.2-2.3z"/></svg>
-          Continue with Google
-        </button>
-        <button type="button" class="quiet-link" data-open-signin>Already have an account? Sign in</button>
       </form>
     </div>
   </div>
@@ -610,7 +633,7 @@
   </div>
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="/js/relaypay-auth.js" data-api-base="https://api.relaypayus.shop" data-google-client-id=""></script>
+  <script src="/js/relaypay-auth.js" data-api-base="" data-google-client-id=""></script>
   <script src="relay-plugin.js"></script>
   <script src="app.js"></script>
 </body>

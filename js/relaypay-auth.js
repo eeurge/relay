@@ -1,53 +1,123 @@
 (function () {
   const script = document.currentScript;
-  const API_BASE = (script && script.dataset.apiBase) || 'https://api.relaypayus.shop';
+  const FALLBACK_API = (script && script.dataset.apiBase) || 'https://api.relaypayus.shop';
   let googleClientId = (script && script.dataset.googleClientId) || '';
+  let apiBase = '';
+  let ready = null;
+
+  function joinUrl(base, path) {
+    if (!base) return path;
+    return `${String(base).replace(/\/$/, '')}${path}`;
+  }
+
+  async function readConfig(base) {
+    const res = await fetch(joinUrl(base, base ? '/auth/config' : '/api/auth/google-config'), {
+      credentials: 'include'
+    });
+    if (!res.ok) return '';
+    const data = await res.json().catch(() => ({}));
+    return String(data.googleClientId || '').trim();
+  }
 
   async function resolveClientId() {
     if (googleClientId) return googleClientId;
-    try {
-      const res = await fetch(`${API_BASE}/auth/config`, { credentials: 'include' });
-      const data = await res.json();
-      googleClientId = String(data.googleClientId || '').trim();
-    } catch {}
-    return googleClientId;
+    if (ready) return ready;
+    ready = (async () => {
+      try {
+        const fromSite = await readConfig('');
+        if (fromSite) {
+          apiBase = '';
+          googleClientId = fromSite;
+          return googleClientId;
+        }
+      } catch {}
+      if (FALLBACK_API) {
+        try {
+          const fromApi = await readConfig(FALLBACK_API);
+          if (fromApi) {
+            apiBase = FALLBACK_API;
+            googleClientId = fromApi;
+            return googleClientId;
+          }
+        } catch {}
+      }
+      return '';
+    })();
+    return ready;
   }
 
   async function csrfToken() {
-    const res = await fetch(`${API_BASE}/auth/csrf`, { credentials: 'include' });
+    if (!apiBase) return '';
+    const res = await fetch(joinUrl(apiBase, '/auth/csrf'), { credentials: 'include' });
     const data = await res.json();
     return data.csrfToken;
   }
 
   async function getMe() {
-    const res = await fetch(`${API_BASE}/auth/me`, { credentials: 'include' });
-    if (!res.ok) return { authenticated: false, user: null };
-    return res.json();
+    const paths = apiBase
+      ? [joinUrl(apiBase, '/auth/me'), '/api/auth/me']
+      : ['/api/auth/me', joinUrl(FALLBACK_API, '/auth/me')];
+    for (const url of paths) {
+      try {
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data && data.authenticated) return data;
+      } catch {}
+    }
+    return { authenticated: false, user: null };
   }
 
   async function signOut() {
-    await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
+    try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch {}
+    if (apiBase || FALLBACK_API) {
+      try {
+        await fetch(joinUrl(apiBase || FALLBACK_API, '/auth/logout'), {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch {}
+    }
   }
 
-  async function exchangeCredential(credential) {
+  function signupAccessKey() {
+    const input = document.getElementById('signup-access-key');
+    return input ? String(input.value || '').trim() : '';
+  }
+
+  async function exchangeCredential({ credential, accessToken }) {
     const token = await csrfToken();
-    const res = await fetch(`${API_BASE}/auth/google`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-csrf-token': token
-      },
-      body: JSON.stringify({ credential })
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.error || 'Google sign-in failed.');
-    return data;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['x-csrf-token'] = token;
+    const body = {
+      credential: credential || '',
+      accessToken: accessToken || '',
+      accessKey: signupAccessKey()
+    };
+    const urls = apiBase
+      ? [joinUrl(apiBase, '/auth/google'), '/api/auth/google']
+      : ['/api/auth/google', joinUrl(FALLBACK_API, '/auth/google')];
+    let lastError = 'Google sign-in failed.';
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) return data;
+        lastError = data.error || lastError;
+        if (res.status === 403) break;
+      } catch {}
+    }
+    throw new Error(lastError);
   }
 
   function setError(button, message) {
-    const form = button.closest('form');
-    const err = form && form.querySelector('.alert-err, [id$="-error"]');
+    const modal = button.closest('.modal-backdrop') || document;
+    const err = modal.querySelector('#signup-error, #signin-error, .alert-err');
     if (!err) return;
     err.hidden = false;
     err.textContent = message;
@@ -55,11 +125,11 @@
 
   function waitForGoogle() {
     return new Promise((resolve, reject) => {
-      if (window.google && window.google.accounts && window.google.accounts.id) return resolve();
+      if (window.google && window.google.accounts && window.google.accounts.oauth2) return resolve();
       let ticks = 0;
       const timer = setInterval(() => {
         ticks += 1;
-        if (window.google && window.google.accounts && window.google.accounts.id) {
+        if (window.google && window.google.accounts && window.google.accounts.oauth2) {
           clearInterval(timer);
           resolve();
         } else if (ticks > 80) {
@@ -70,52 +140,50 @@
     });
   }
 
+  async function finishGoogle(button, payload) {
+    await exchangeCredential(payload);
+    if (typeof window.relaypayOnGoogleSignIn === 'function') {
+      window.relaypayOnGoogleSignIn();
+      return;
+    }
+    window.location.href = '/dashboard';
+  }
+
   async function startGoogle(button) {
     const clientId = await resolveClientId();
     if (!clientId) {
       setError(button, 'Google sign-in is not configured.');
       return;
     }
+    const inSignup = Boolean(button.closest('#signup-modal'));
+    if (inSignup && !signupAccessKey()) {
+      setError(button, 'Enter your access key first.');
+      return;
+    }
     await waitForGoogle();
-    window.google.accounts.id.initialize({
+    const oauth = window.google.accounts.oauth2;
+    if (!oauth || typeof oauth.initTokenClient !== 'function') {
+      throw new Error('Google sign-in did not load.');
+    }
+    const tokenClient = oauth.initTokenClient({
       client_id: clientId,
+      scope: 'openid email profile',
       callback: async (response) => {
+        if (!response || response.error || !response.access_token) {
+          setError(button, 'Google sign-in was cancelled.');
+          return;
+        }
         try {
-          await exchangeCredential(response.credential);
-          if (typeof window.relaypayOnGoogleSignIn === 'function') {
-            window.relaypayOnGoogleSignIn();
-            return;
-          }
-          window.location.reload();
+          await finishGoogle(button, { accessToken: response.access_token });
         } catch (err) {
           setError(button, err.message || 'Google sign-in failed.');
         }
-      },
-      ux_mode: 'popup',
-      auto_select: false
-    });
-    window.google.accounts.id.prompt((notification) => {
-      if (notification && (notification.isNotDisplayed() || notification.isSkippedMoment())) {
-        const host = button.parentElement;
-        let slot = host.querySelector('[data-google-fallback]');
-        if (!slot) {
-          slot = document.createElement('div');
-          slot.dataset.googleFallback = '1';
-          slot.style.width = '100%';
-          host.insertBefore(slot, button);
-        }
-        button.hidden = true;
-        window.google.accounts.id.renderButton(slot, {
-          type: 'standard',
-          theme: 'filled_black',
-          size: 'large',
-          width: slot.offsetWidth || 320,
-          text: 'continue_with',
-          shape: 'rectangular'
-        });
       }
     });
+    tokenClient.requestAccessToken({ prompt: inSignup ? 'consent' : '' });
   }
+
+  resolveClientId().catch(() => {});
 
   document.querySelectorAll('[data-google-signin]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -123,5 +191,5 @@
     });
   });
 
-  window.RelaypayAuth = { API_BASE, getMe, signOut };
+  window.RelaypayAuth = { getMe, signOut, resolveClientId };
 })();

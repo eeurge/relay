@@ -9,8 +9,11 @@ Set these on the API web service (do not put values in git):
 - `SITE_ORIGIN`
 - `GOOGLE_CLIENT_ID`
 - `DATABASE_URL`
+- `SIGNUP_ACCESS_KEY`
 
-`DATABASE_URL` is the Aiven MySQL Service URI (`mysql://...`). The server creates `rp_users` and `rp_sessions` on boot.
+`DATABASE_URL` is the Aiven MySQL Service URI (`mysql://...`). The server creates `rp_users` and `rp_sessions` on boot. New Google accounts also need `SIGNUP_ACCESS_KEY`. Existing accounts can sign in without it.
+
+The homepage prefers same-origin `/api/auth/google` on the main Relay web service. Set `GOOGLE_CLIENT_ID` and `SIGNUP_ACCESS_KEY` there too.
 
 Bind the service to `https://api.relaypayus.shop`.
 

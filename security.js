@@ -68,11 +68,17 @@ const schemas = {
     name: z.string({ required_error: 'Enter your name.' }).trim().min(2, 'Enter your name.').max(80),
     email: emailField,
     password: z.string({ required_error: 'Use at least 8 characters.' }).min(8, 'Use at least 8 characters.'),
-    confirmPassword: z.string({ required_error: 'Use at least 8 characters.' }).min(8, 'Use at least 8 characters.')
+    confirmPassword: z.string({ required_error: 'Use at least 8 characters.' }).min(8, 'Use at least 8 characters.'),
+    accessKey: z.string({ required_error: 'Enter your access key.' }).trim().min(1, 'Enter your access key.').max(200)
   }).strip().refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match.',
     path: ['confirmPassword']
   }),
+  google: z.object({
+    credential: z.string().max(8000).optional().default(''),
+    accessToken: z.string().max(8000).optional().default(''),
+    accessKey: z.string().max(200).optional().default('')
+  }).strip(),
   account: z.object({
     name: z.string().trim().min(2, 'Enter your name.').max(80),
     email: emailField,
@@ -105,11 +111,11 @@ function helmetMiddleware() {
       useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", 'https://accounts.google.com'],
+        scriptSrc: ["'self'", 'https://accounts.google.com', 'https://apis.google.com'],
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
         imgSrc: ["'self'", 'data:', 'https://www.gstatic.com', 'https://lh3.googleusercontent.com'],
-        connectSrc: ["'self'", 'https://formsubmit.co', 'https://www.formsubmit.co', 'https://api.relaypayus.shop', 'https://accounts.google.com'],
+        connectSrc: ["'self'", 'https://formsubmit.co', 'https://www.formsubmit.co', 'https://api.relaypayus.shop', 'https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://www.googleapis.com', 'https://apis.google.com'],
         frameSrc: ["'self'", 'https://accounts.google.com'],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],

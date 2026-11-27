@@ -10,6 +10,7 @@ const { OAuth2Client } = require('google-auth-library');
 const PORT = Number(process.env.PORT || 8787);
 const SITE_ORIGIN = String(process.env.SITE_ORIGIN || 'https://relaypayus.shop').replace(/\/$/, '');
 const GOOGLE_CLIENT_ID = String(process.env.GOOGLE_CLIENT_ID || '').trim();
+const SIGNUP_ACCESS_KEY = String(process.env.SIGNUP_ACCESS_KEY || '').trim();
 const SESSION_COOKIE = 'rp_session';
 const CSRF_COOKIE = 'rp_csrf';
 const SESSION_MS = 7 * 24 * 60 * 60 * 1000;
@@ -77,6 +78,13 @@ function hashToken(value) {
   return crypto.createHash('sha256').update(String(value || '')).digest('hex');
 }
 
+function accessKeyMatches(provided) {
+  if (!SIGNUP_ACCESS_KEY) return false;
+  const left = crypto.createHash('sha256').update(String(provided || '')).digest();
+  const right = crypto.createHash('sha256').update(SIGNUP_ACCESS_KEY).digest();
+  return crypto.timingSafeEqual(left, right);
+}
+
 function publicUser(row) {
   return {
     id: String(row.id),
@@ -131,20 +139,46 @@ app.post('/auth/google', async (req, res) => {
       return res.status(503).json({ error: 'Google sign-in is not configured.' });
     }
     const credential = String(req.body?.credential || '');
-    if (!credential) return res.status(400).json({ error: 'Missing Google credential.' });
-
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: GOOGLE_CLIENT_ID
-    });
-    const payload = ticket.getPayload() || {};
-    if (!payload.email_verified || !payload.sub || !payload.email) {
+    const accessToken = String(req.body?.accessToken || '');
+    let payload = {};
+    if (credential) {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: GOOGLE_CLIENT_ID
+      });
+      payload = ticket.getPayload() || {};
+    } else if (accessToken) {
+      const metaRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`);
+      const meta = await metaRes.json().catch(() => ({}));
+      if (!metaRes.ok || (meta.aud !== GOOGLE_CLIENT_ID && meta.azp !== GOOGLE_CLIENT_ID)) {
+        return res.status(401).json({ error: 'Google sign-in failed.' });
+      }
+      const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      payload = await profileRes.json().catch(() => ({}));
+      if (!profileRes.ok) return res.status(401).json({ error: 'Google sign-in failed.' });
+    } else {
+      return res.status(400).json({ error: 'Missing Google credential.' });
+    }
+    if (!payload.email_verified && payload.email_verified !== 'true') {
+      return res.status(401).json({ error: 'Google account is not verified.' });
+    }
+    if (!payload.sub || !payload.email) {
       return res.status(401).json({ error: 'Google account is not verified.' });
     }
 
     const email = String(payload.email).trim().toLowerCase();
     const name = String(payload.name || email.split('@')[0]).slice(0, 80);
     const picture = payload.picture ? String(payload.picture).slice(0, 500) : null;
+
+    const [existing] = await pool.query(
+      'SELECT id FROM rp_users WHERE google_sub = ? OR email = ? LIMIT 1',
+      [payload.sub, email]
+    );
+    if (!existing[0] && !accessKeyMatches(req.body?.accessKey)) {
+      return res.status(403).json({ error: 'Access key is invalid.' });
+    }
 
     await pool.query(
       `INSERT INTO rp_users (google_sub, email, name, picture, last_login_at)
