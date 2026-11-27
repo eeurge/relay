@@ -11,7 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(n) || 0);
   }
 
-  let liveCommissions = { starter: 8.0, growth: 6.0, enterprise: 4.5, paypalMarkup: 1.0, fixedFee: 0.3 };
+  let liveCommissions = {
+    starter: 5.5,
+    growth: 5.0,
+    enterprise: 4.5,
+    paypalStarter: 7.0,
+    paypalGrowth: 6.5,
+    paypalEnterprise: 5.5,
+    fixedFee: 0.3
+  };
   let activePricingRail = 'stripe';
 
   // ------------------------------------------------------------------------
@@ -26,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#hero-status-text').textContent = data.settings.statusText;
       }
       if (data.settings?.commissions) {
-        liveCommissions = data.settings.commissions;
+        liveCommissions = { ...liveCommissions, ...data.settings.commissions };
         renderPricing();
         updateCalculator();
       }
@@ -104,99 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
       sbRail = btn.dataset.sbRail;
       $$('[data-sb-rail]').forEach((item) => item.classList.toggle('is-active', item === btn));
       const label = $('#sb-item-label');
-      if (label) label.textContent = sbRail === 'paypal' ? 'PayPal' : sbRail === 'wallets' ? 'Wallets' : 'Stripe';
+      if (label) label.textContent = sbRail === 'paypal' ? 'PayPal' : sbRail === 'apple' ? 'Apple Pay' : 'Stripe';
     });
   });
-
-  async function openStripeCheckout({ amountUsd, email, item, rail, button, status }) {
-    if (rail === 'paypal') {
-      const paypalParams = new URLSearchParams({
-        cmd: '_xclick',
-        business: 'eurgeee@gmail.com',
-        item_name: item,
-        amount: Number(amountUsd).toFixed(2),
-        currency_code: 'USD',
-        no_shipping: '1',
-        charset: 'utf-8',
-        return: `${location.origin}/?checkout=success&rail=paypal`,
-        cancel_return: `${location.origin}/?checkout=canceled`
-      });
-      if (status) status.textContent = 'Opening PayPal…';
-      fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vendorId: 'vnd_vendor', item, amountUsd, rail: 'paypal', customerEmail: email }),
-        keepalive: true
-      }).catch(() => {});
-      window.location.href = `https://www.paypal.com/cgi-bin/webscr?${paypalParams}`;
-      return;
-    }
-    if (button) button.disabled = true;
-    const opening = rail === 'wallets'
-      ? 'Opening Apple Pay and Google Pay…'
-      : 'Opening Stripe…';
-    if (status) status.textContent = opening;
-    try {
-      const res = await fetch('/api/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vendorId: 'vnd_vendor',
-          item,
-          amountUsd,
-          rail,
-          customerEmail: email
-        })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Stripe checkout failed');
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-        return;
-      }
-      if (status) {
-        status.textContent = rail === 'paypal'
-          ? 'PayPal is not turned on for this Stripe account yet. Stripe, Apple Pay, and Google Pay open checkout now.'
-          : 'Checkout did not open.';
-      }
-    } catch (err) {
-      if (status) status.textContent = err.message || 'Stripe checkout failed';
-    } finally {
-      if (button) button.disabled = false;
-    }
-  }
 
   sbPayBtn?.addEventListener('click', () => {
-    const amountUsd = Math.max(1, Number(sbAmount?.value) || 49);
-    const email = $('#sb-email')?.value?.trim() || '';
-    openStripeCheckout({
-      amountUsd,
-      email,
-      item: 'Checkout',
-      rail: sbRail,
-      button: sbPayBtn,
-      status: sbConsole
-    });
+    if (sbConsole) sbConsole.textContent = 'Preview only. This card does not take a payment.';
   });
-
-  const checkoutParams = new URLSearchParams(window.location.search);
-  if (checkoutParams.get('checkout') === 'success' && checkoutParams.get('order')) {
-    const orderId = checkoutParams.get('order');
-    fetch(`/api/stripe/confirm?order=${encodeURIComponent(orderId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const paid = data.order?.status === 'paid' || data.paymentStatus === 'paid';
-        const message = data.order?.rail === 'paypal'
-          ? `${orderId} was sent to PayPal.`
-          : paid
-            ? `${orderId} was paid and sent to your Stripe account.`
-            : `${orderId} is waiting on Stripe.`;
-        if (sbConsole) sbConsole.textContent = message;
-        const pluginStatus = $('#plugin-stripe-status');
-        if (pluginStatus) pluginStatus.textContent = message;
-      })
-      .catch(() => {});
-  }
 
   // ------------------------------------------------------------------------
   // 2. Mobile Navigation Drawer
@@ -370,11 +292,18 @@ if (event.type === 'checkout.session.completed') {
   // ------------------------------------------------------------------------
   // 5. Pricing & Payout Calculator
   // ------------------------------------------------------------------------
+  function rateFor(tier, rail) {
+    if (rail === 'paypal') {
+      const key = tier === 'enterprise' ? 'paypalEnterprise' : tier === 'growth' ? 'paypalGrowth' : 'paypalStarter';
+      return Number(liveCommissions[key] ?? liveCommissions[tier]);
+    }
+    return Number(liveCommissions[tier]);
+  }
+
   function renderPricing() {
-    const markup = activePricingRail === 'paypal' ? liveCommissions.paypalMarkup : 0;
     ['starter', 'growth', 'enterprise'].forEach((tier) => {
       const el = $(`[data-tier-rate="${tier}"]`);
-      if (el) el.textContent = `${(Number(liveCommissions[tier]) + markup).toFixed(1)}%`;
+      if (el) el.textContent = `${rateFor(tier, activePricingRail).toFixed(1)}%`;
     });
   }
 
@@ -388,7 +317,7 @@ if (event.type === 'checkout.session.completed') {
     const rail = calcRail?.value || 'stripe';
     const tierKey = vol >= 50000 ? 'enterprise' : vol >= 10000 ? 'growth' : 'starter';
     const tierLabel = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
-    const rate = Number(liveCommissions[tierKey]) + (rail === 'paypal' ? liveCommissions.paypalMarkup : 0);
+    const rate = rateFor(tierKey, rail);
     const fee = (vol * rate) / 100;
     const net = Math.max(0, vol - fee);
 
@@ -403,6 +332,11 @@ if (event.type === 'checkout.session.completed') {
       activePricingRail = btn.dataset.railTab;
       $$('[data-rail-tab]').forEach((b) => b.classList.toggle('is-active', b === btn));
       if (calcRail) calcRail.value = activePricingRail;
+      const calcLabel = $('#calculator .cselect-value');
+      if (calcLabel) calcLabel.textContent = activePricingRail === 'paypal' ? 'PayPal Checkout' : 'Stripe & Cards';
+      $$('#calculator [data-value]').forEach((item) => {
+        item.setAttribute('aria-selected', String(item.dataset.value === activePricingRail));
+      });
       renderPricing();
       updateCalculator();
     });
@@ -570,8 +504,7 @@ if (event.type === 'checkout.session.completed') {
           email: $('#app-email').value.trim(),
           discord: $('#app-discord').value.trim(),
           description: about,
-          monthlyVolume: Number($('#app-volume').value),
-          payoutMethod: $('#app-payout').value
+          monthlyVolume: Number($('#app-volume').value)
         })
       });
       const data = await res.json();

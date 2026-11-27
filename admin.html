@@ -230,7 +230,7 @@
               <form id="add-vendor-form" class="form-grid-3">
                 <div><label class="label">Store Name</label><input class="input" id="nv-name" placeholder="Apex Keys" required /></div>
                 <div><label class="label">Website URL</label><input class="input" id="nv-url" placeholder="https://apexkeys.io" required /></div>
-                <div><label class="label">Commission %</label><input class="input" id="nv-rate" type="number" step="0.1" value="6.0" required /></div>
+                <div><label class="label">Commission %</label><input class="input" id="nv-rate" type="number" step="0.1" value="5.0" required /></div>
                 <div><label class="label">Contact</label><input class="input" id="nv-contact" placeholder="@apex" /></div>
                 <div><label class="label">Payout Destination</label><input class="input" id="nv-dest" placeholder="TRC-20 address or IBAN" /></div>
                 <div style="display:flex; align-items:flex-end;"><button type="submit" class="btn btn--primary btn--full">Create Vendor &amp; API Key</button></div>
@@ -376,9 +376,14 @@
                   <div><label class="label" for="set-growth">Growth Commission (%)</label><input class="input" id="set-growth" type="number" step="0.1" /></div>
                   <div><label class="label" for="set-enterprise">Enterprise Commission (%)</label><input class="input" id="set-enterprise" type="number" step="0.1" /></div>
                 </div>
-                <div class="form-grid-2">
-                  <div><label class="label" for="set-paypal-markup">PayPal Rail Markup (%)</label><input class="input" id="set-paypal-markup" type="number" step="0.1" /></div>
-                  <div><label class="label" for="set-fixed">Fixed Per-Order Fee ($)</label><input class="input" id="set-fixed" type="number" step="0.05" /></div>
+                <div class="form-grid-3">
+                  <div><label class="label" for="set-paypal-starter">PayPal Starter (%)</label><input class="input" id="set-paypal-starter" type="number" step="0.1" /></div>
+                  <div><label class="label" for="set-paypal-growth">PayPal Growth (%)</label><input class="input" id="set-paypal-growth" type="number" step="0.1" /></div>
+                  <div><label class="label" for="set-paypal-enterprise">PayPal Enterprise (%)</label><input class="input" id="set-paypal-enterprise" type="number" step="0.1" /></div>
+                </div>
+                <div>
+                  <label class="label" for="set-fixed">Fixed Per-Order Fee ($)</label>
+                  <input class="input" id="set-fixed" type="number" step="0.05" />
                 </div>
                 <div class="switch-row" style="border:1px solid var(--border); border-radius:12px; padding:14px;">
                   <div>

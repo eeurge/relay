@@ -567,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     if (res.ok) {
       e.target.reset();
-      $('#nv-rate').value = '6.0';
+      $('#nv-rate').value = '5.0';
       showToast('Vendor created and activated.');
       refreshOverview();
     }
@@ -711,7 +711,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#set-starter').value = s.commissions.starter;
     $('#set-growth').value = s.commissions.growth;
     $('#set-enterprise').value = s.commissions.enterprise;
-    $('#set-paypal-markup').value = s.commissions.paypalMarkup;
+    $('#set-paypal-starter').value = s.commissions.paypalStarter;
+    $('#set-paypal-growth').value = s.commissions.paypalGrowth;
+    $('#set-paypal-enterprise').value = s.commissions.paypalEnterprise;
     $('#set-fixed').value = s.commissions.fixedFee;
     acceptingState = Boolean(s.acceptingApplications);
     $('#set-accepting-toggle').classList.toggle('is-on', acceptingState);
@@ -770,7 +772,9 @@ document.addEventListener('DOMContentLoaded', () => {
           starter: Number($('#set-starter').value),
           growth: Number($('#set-growth').value),
           enterprise: Number($('#set-enterprise').value),
-          paypalMarkup: Number($('#set-paypal-markup').value),
+          paypalStarter: Number($('#set-paypal-starter').value),
+          paypalGrowth: Number($('#set-paypal-growth').value),
+          paypalEnterprise: Number($('#set-paypal-enterprise').value),
           fixedFee: Number($('#set-fixed').value)
         }
       })

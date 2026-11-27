@@ -77,7 +77,7 @@ function vendorLoginRecord() {
     contact: 'vendor@relay.dev',
     description: '',
     tier: 'growth',
-    rate: 6,
+    rate: 5,
     status: 'active',
     rails: { stripe: true, paypal: true },
     payoutMethod: 'USDT (TRC-20)',
@@ -101,10 +101,12 @@ function createInitialStore() {
         radar3ds: true
       },
       commissions: {
-        starter: 8.0,
-        growth: 6.0,
+        starter: 5.5,
+        growth: 5.0,
         enterprise: 4.5,
-        paypalMarkup: 1.0,
+        paypalStarter: 7.0,
+        paypalGrowth: 6.5,
+        paypalEnterprise: 5.5,
         fixedFee: 0.3
       },
       discordInviteUrl: 'https://discord.com/invite/VVe5fYYT'
@@ -143,6 +145,20 @@ function ensureVendorLogin(store) {
   if (!discordInvite || discordInvite.includes('your-invite-code') || discordInvite.includes('ky3qukfrA')) {
     store.settings.discordInviteUrl = 'https://discord.com/invite/VVe5fYYT';
   }
+  store.settings.commissions = store.settings.commissions || {};
+  const commissions = store.settings.commissions;
+  const oldPublishedRates = Number(commissions.starter) === 8 && Number(commissions.growth) === 6 && Number(commissions.enterprise) === 4.5;
+  if (oldPublishedRates || commissions.starter == null) {
+    commissions.starter = 5.5;
+    commissions.growth = 5.0;
+    commissions.enterprise = 4.5;
+  }
+  if (oldPublishedRates || commissions.paypalStarter == null) {
+    commissions.paypalStarter = 7.0;
+    commissions.paypalGrowth = 6.5;
+    commissions.paypalEnterprise = 5.5;
+  }
+  if (commissions.fixedFee == null) commissions.fixedFee = 0.3;
   store.orders = (store.orders || []).filter((order) => !String(order.id || '').startsWith('RL-EX') && !String(order.stripeRef || '').startsWith('pi_example_'));
   store.payouts = (store.payouts || []).filter((payout) => payout.id !== 'PO-EX1' && !String(payout.id || '').startsWith('PO-EX'));
   store.vendors = (store.vendors || []).filter((vendor) => vendor.id !== 'vnd_example' && vendor.name !== 'Example Store');
@@ -278,11 +294,21 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-function calculateCommission(gross, rail, vendorRate) {
+function commissionRate(tier, rail) {
+  const commissions = store.settings.commissions || {};
+  if (rail === 'paypal') {
+    const key = tier === 'enterprise' ? 'paypalEnterprise' : tier === 'growth' ? 'paypalGrowth' : 'paypalStarter';
+    return Number(commissions[key] ?? commissions.growth ?? 6.5);
+  }
+  return Number(commissions[tier] ?? commissions.growth ?? 5);
+}
+
+function calculateCommission(gross, rail, vendor) {
   const fixed = store.settings.commissions.fixedFee || 0.3;
-  const baseRate = typeof vendorRate === 'number' ? vendorRate : store.settings.commissions.growth;
-  const markup = rail === 'paypal' ? (store.settings.commissions.paypalMarkup || 1.0) : 0;
-  const effectivePct = baseRate + markup;
+  const tier = vendor?.tier || 'growth';
+  const effectivePct = rail === 'paypal'
+    ? commissionRate(tier, 'paypal')
+    : (typeof vendor?.rate === 'number' ? vendor.rate : commissionRate(tier, 'stripe'));
   const fee = Math.round(((gross * effectivePct) / 100 + fixed) * 100) / 100;
   const net = Math.max(0, Math.round((gross - fee) * 100) / 100);
   return { effectivePct, fee, net };
@@ -410,7 +436,7 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
     }
 
     const vendor = store.vendors.find((v) => v.id === vendorId) || store.vendors[0];
-    const { effectivePct, fee, net } = calculateCommission(gross, safeRail, vendor?.rate);
+    const { effectivePct, fee, net } = calculateCommission(gross, safeRail, vendor);
     const orderId = `RL-${Math.floor(8500 + Math.random() * 1499)}`;
 
     if (safeRail === 'paypal') {
@@ -595,9 +621,7 @@ app.post('/api/public/apply', (req, res) => {
   if (about.length < 90) {
     return res.status(400).json({ error: 'Describe what you sell in at least 90 characters.' });
   }
-  if (!CRYPTO_PAYOUTS.includes(payoutMethod)) {
-    return res.status(400).json({ error: 'Cashouts are USDT or BTC only.' });
-  }
+  const cashout = CRYPTO_PAYOUTS.includes(payoutMethod) ? payoutMethod : 'USDT (TRC-20)';
 
   const vol = Math.max(500, Number(monthlyVolume) || 15000);
   const tier = vol >= 50000 ? 'enterprise' : vol >= 10000 ? 'growth' : 'starter';
@@ -611,13 +635,13 @@ app.post('/api/public/apply', (req, res) => {
     website: String(website).slice(0, 140),
     email: mail,
     discord: String(discord).replace(/^@/, '').slice(0, 80),
-    contact: `${mail} Â· ${String(discord).replace(/^@/, '')}`,
+    contact: `${mail} · ${String(discord).replace(/^@/, '')}`,
     description: about.slice(0, 1200),
     tier,
     rate,
     status: 'pending',
     rails: { stripe: true, paypal: true },
-    payoutMethod,
+    payoutMethod: cashout,
     payoutDest: 'Pending crypto wallet',
     apiKey,
     monthlyVolume: vol,
@@ -630,14 +654,13 @@ app.post('/api/public/apply', (req, res) => {
     ok: true,
     inbox: APPLY_INBOX,
     mail: {
-      _subject: `Relay vendor application â€” ${vendor.name}`,
+      _subject: `Relay vendor application — ${vendor.name}`,
       _template: 'table',
       _replyto: vendor.email,
       store: vendor.name,
       website: vendor.website,
       email: vendor.email,
       discord: vendor.discord,
-      crypto_cashout: vendor.payoutMethod,
       monthly_volume_usd: String(vendor.monthlyVolume),
       what_they_sell: vendor.description
     }
@@ -907,7 +930,7 @@ app.patch('/api/admin/settings', requireAdmin, (req, res) => {
     }
   }
   if (body.commissions && typeof body.commissions === 'object') {
-    for (const k of ['starter', 'growth', 'enterprise', 'paypalMarkup', 'fixedFee']) {
+    for (const k of ['starter', 'growth', 'enterprise', 'paypalStarter', 'paypalGrowth', 'paypalEnterprise', 'paypalMarkup', 'fixedFee']) {
       const n = Number(body.commissions[k]);
       if (!Number.isNaN(n) && n >= 0 && n <= 30) store.settings.commissions[k] = n;
     }
