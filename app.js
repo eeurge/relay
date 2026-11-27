@@ -338,11 +338,6 @@ if (event.type === 'checkout.session.completed') {
       const el = $(`[data-tier-rate="${tier}"]`);
       if (el) el.textContent = `${rateFor(tier, activePricingRail).toFixed(1)}%`;
     });
-    $$('[data-rail-line]').forEach((item) => {
-      const copy = activePricingRail === 'paypal' ? item.dataset.paypalCopy : item.dataset.stripeCopy;
-      const label = item.querySelector('span');
-      if (copy && label) label.textContent = copy;
-    });
   }
 
   $$('[data-rail-tab]').forEach((btn) => {
@@ -483,6 +478,7 @@ if (event.type === 'checkout.session.completed') {
 
   // Vendor Application
   $$('[data-open-apply]').forEach((b) => b.addEventListener('click', () => {
+    closeModals();
     $('#apply-form').hidden = false;
     $('#apply-result').hidden = true;
     $('#apply-error').hidden = true;

@@ -129,15 +129,15 @@
               <p class="checkout-method-label">Choose Payment Method</p>
               <div class="sandbox-methods" role="tablist" aria-label="Payment methods">
                 <button type="button" class="sandbox-method is-active" data-sb-rail="stripe">
-                  <img class="pay-mark" src="/img/stripe-mark.png" alt="" />
+                  <span class="pay-mark pay-mark--stripe" aria-hidden="true"></span>
                   Stripe
                 </button>
                 <button type="button" class="sandbox-method" data-sb-rail="paypal">
-                  <img class="pay-mark pay-mark--wide" src="/img/paypal-mark.png" alt="" />
+                  <span class="pay-mark pay-mark--paypal" aria-hidden="true"></span>
                   PayPal
                 </button>
                 <button type="button" class="sandbox-method" data-sb-rail="apple">
-                  <svg class="pay-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.64c0-1.64.86-2.9 2.3-3.64-.86-1.24-2.16-1.92-3.86-2.04-1.62-.12-3.4.96-4.04.96-.7 0-2.26-.9-3.72-.88-1.9.04-3.66 1.12-4.62 2.84-1.98 3.44-.5 8.52 1.4 11.3.94 1.36 2.04 2.88 3.5 2.82 1.4-.06 1.92-.9 3.62-.9 1.68 0 2.16.9 3.64.86 1.52-.04 2.46-1.36 3.38-2.74.66-.98 1.16-2.06 1.5-3.18-1.78-.68-2.1-2.12-2.1-3.4zM14.7 5.16c.86-1.02 1.4-2.44 1.24-3.86-1.2.06-2.64.8-3.5 1.82-.78.9-1.48 2.36-1.3 3.74 1.32.1 2.68-.68 3.56-1.7z"/></svg>
+                  <svg class="pay-mark pay-mark--apple" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.64c0-1.64.86-2.9 2.3-3.64-.86-1.24-2.16-1.92-3.86-2.04-1.62-.12-3.4.96-4.04.96-.7 0-2.26-.9-3.72-.88-1.9.04-3.66 1.12-4.62 2.84-1.98 3.44-.5 8.52 1.4 11.3.94 1.36 2.04 2.88 3.5 2.82 1.4-.06 1.92-.9 3.62-.9 1.68 0 2.16.9 3.64.86 1.52-.04 2.46-1.36 3.38-2.74.66-.98 1.16-2.06 1.5-3.18-1.78-.68-2.1-2.12-2.1-3.4zM14.7 5.16c.86-1.02 1.4-2.44 1.24-3.86-1.2.06-2.64.8-3.5 1.82-.78.9-1.48 2.36-1.3 3.74 1.32.1 2.68-.68 3.56-1.7z"/></svg>
                   Apple Pay
                 </button>
               </div>
@@ -182,29 +182,29 @@
         </div>
 
         <div class="flow-strip">
-          <div class="flow-node">
+          <div class="flow-node glass">
             <div class="flow-step">STEP 01</div>
             <div class="flow-title">Vendor embeds script</div>
             <p class="flow-desc">The vendor pastes <code>relay-plugin.js</code> and adds <code>data-relay-checkout</code> onto any Buy button.</p>
           </div>
-          <div class="flow-node">
+          <div class="flow-node glass">
             <div class="flow-step">STEP 02</div>
             <div class="flow-title">Relay creates Stripe session</div>
             <p class="flow-desc">Relay creates the Stripe Checkout session for that vendor and sends the customer to Stripe.</p>
           </div>
-          <div class="flow-node">
+          <div class="flow-node glass">
             <div class="flow-step">STEP 03</div>
             <div class="flow-title">Stripe verifies &amp; webhooks</div>
             <p class="flow-desc">Customer completes 3DS2 card/Apple Pay checkout. Stripe posts a signed event to <code>/api/stripe/webhook</code>.</p>
           </div>
-          <div class="flow-node">
+          <div class="flow-node glass">
             <div class="flow-step">STEP 04</div>
             <div class="flow-title">Commission &amp; vendor payout</div>
             <p class="flow-desc">Relay keeps its fee, marks the order paid, and adds the vendor’s net to their crypto cashout balance.</p>
           </div>
         </div>
 
-        <div class="code-explorer">
+        <div class="code-explorer glass">
           <div class="code-tabs-bar">
             <div class="code-tabs" role="tablist">
               <button type="button" class="code-tab is-active" data-code-tab="embed">1. Vendor Site HTML</button>
@@ -258,7 +258,7 @@
         </div>
 
         <div class="bento-top">
-          <article class="bento-card bento-card--accent">
+          <article class="bento-card bento-card--accent glass">
             <div class="bento-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M2 10h20" /></svg>
             </div>
@@ -268,7 +268,7 @@
             </p>
           </article>
 
-          <article class="bento-card bento-card--sky">
+          <article class="bento-card bento-card--sky glass">
             <div class="bento-icon" style="color: var(--sky);" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></svg>
             </div>
@@ -280,7 +280,7 @@
         </div>
 
         <div class="bento-bottom">
-          <article class="bento-card">
+          <article class="bento-card glass">
             <div class="bento-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
             </div>
@@ -288,7 +288,7 @@
             <p class="bento-desc">HMAC-SHA256 webhooks notify vendor sites immediately on capture so keys, licenses, and digital orders fulfill with zero manual delay.</p>
           </article>
 
-          <article class="bento-card">
+          <article class="bento-card glass">
             <div class="bento-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 4v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V7l7-4z" /><path d="M9.5 12.2l1.8 1.8 3.6-3.8" /></svg>
             </div>
@@ -296,7 +296,7 @@
             <p class="bento-desc">Built-in 3D Secure verification, velocity filtering, and order audit trails reduce fraudulent chargebacks across Stripe and PayPal.</p>
           </article>
 
-          <article class="bento-card">
+          <article class="bento-card glass">
             <div class="bento-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
             </div>
@@ -319,66 +319,48 @@
         </div>
 
         <div class="rail-switch-wrap">
-          <div class="segmented" role="tablist">
+          <div class="segmented glass" role="tablist">
             <button type="button" class="segmented-btn is-active" data-rail-tab="stripe">Stripe &amp; Cards</button>
             <button type="button" class="segmented-btn" data-rail-tab="paypal">PayPal Checkout</button>
           </div>
         </div>
 
         <div class="pricing-grid">
-          <article class="price-card">
+          <article class="price-card glass">
             <div class="price-head"><h3 class="price-name">Starter</h3></div>
             <div class="price-rate"><span class="price-num" data-tier-rate="starter">5.5%</span><span class="price-unit">+ $0.30 / under $10k mo</span></div>
             <p class="price-desc">Drop-in checkout, a vendor login, and crypto cashouts after approval.</p>
-            <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="5000">Apply for Starter</button>
-            <ul class="price-list">
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Drop-in Stripe &amp; PayPal plugin</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Hosted Checkout — cards stay on Stripe</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>24h–48h crypto cashouts</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>HMAC fulfillment webhooks</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Vendor dashboard of paid orders</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Discord help on applications</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Email receipt on every paid order</li>
-              <li data-rail-line data-stripe-copy="Cards, Apple Pay, and 3DS on Checkout" data-paypal-copy="PayPal Checkout for your buyers"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg><span>Cards, Apple Pay, and 3DS on Checkout</span></li>
-            </ul>
+            <button type="button" class="btn btn--secondary btn--full btn--glass" data-open-apply data-volume="5000">Apply for Starter</button>
           </article>
 
-          <article class="price-card price-card--featured">
+          <article class="price-card price-card--featured glass">
             <div class="price-head">
               <h3 class="price-name">Growth</h3>
               <span class="mode-badge">Most Popular</span>
             </div>
             <div class="price-rate"><span class="price-num" data-tier-rate="growth">5.0%</span><span class="price-unit">+ $0.30 / $10k – $50k mo</span></div>
-            <p class="price-desc">API access, same-day settlements, and a dedicated desk for orders.</p>
-            <button type="button" class="btn btn--primary btn--full" data-open-apply data-volume="25000">Apply for Growth</button>
-            <ul class="price-list">
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Full REST API + embed plugin</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Same-day T+0 settlements</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Dedicated vendor portal login</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Order ledger and dispute flags</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Crypto cashouts from the desk</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Volume-based rate as monthly sales grow</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Priority review on vendor applications</li>
-              <li data-rail-line data-stripe-copy="Apple Pay on hosted Stripe Checkout" data-paypal-copy="PayPal Checkout at Growth rates"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg><span>Apple Pay on hosted Stripe Checkout</span></li>
-            </ul>
+            <p class="price-desc">The same checkout and vendor tools, at the $10k–$50k monthly volume rate.</p>
+            <button type="button" class="btn btn--primary btn--full btn--glass" data-open-apply data-volume="25000">Apply for Growth</button>
           </article>
 
-          <article class="price-card">
+          <article class="price-card glass">
             <div class="price-head"><h3 class="price-name">Enterprise</h3></div>
             <div class="price-rate"><span class="price-num" data-tier-rate="enterprise">4.5%</span><span class="price-unit">+ $0.30 / $50k+ monthly</span></div>
-            <p class="price-desc">Private Stripe and PayPal pool, named terms, and engineering support.</p>
-            <button type="button" class="btn btn--secondary btn--full" data-open-apply data-volume="75000">Request Enterprise</button>
-            <ul class="price-list">
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Dedicated Stripe &amp; PayPal pool</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Instant rolling payouts</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Custom rate override in Admin</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Direct engineering support</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Split payouts and named terms</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Named account contact</li>
-              <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Custom payout cadence in USDT or BTC</li>
-              <li data-rail-line data-stripe-copy="Private Stripe volume pool" data-paypal-copy="Private PayPal Checkout pool"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg><span>Private Stripe volume pool</span></li>
-            </ul>
+            <p class="price-desc">The same checkout and vendor tools, at the $50k+ monthly volume rate.</p>
+            <button type="button" class="btn btn--secondary btn--full btn--glass" data-open-apply data-volume="75000">Request Enterprise</button>
           </article>
+        </div>
+
+        <div class="included-panel glass">
+          <h3 class="included-title">Included with every package</h3>
+          <ul class="included-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Drop-in Stripe &amp; PayPal plugin</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Hosted Stripe Checkout — cards stay on Stripe</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Crypto cashouts in USDT or BTC</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>HMAC fulfillment webhooks</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Vendor dashboard of paid orders</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" /></svg>Discord help on applications</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -431,7 +413,7 @@
          ==================================================================== -->
     <section class="section" style="padding-top: 0;">
       <div class="container">
-        <div class="cta-box">
+        <div class="cta-box glass">
           <h2 class="section-title">Ready to launch Relay on your storefront?</h2>
           <p class="section-lead" style="max-width:520px; margin:0 auto 28px;">
             Apply as a vendor. Applications land in the admin panel for approval, and the embed goes on the vendor's product page after you approve them.
@@ -550,7 +532,10 @@
           <input type="password" id="signup-confirm" class="input" placeholder="Type it again" required minlength="8" />
         </div>
         <div>
-          <label class="field-label" for="signup-access-key">Access key</label>
+          <label class="field-label field-label--split" for="signup-access-key">
+            Access key
+            <button type="button" class="field-label-link" data-open-apply>(Apply to be a Vendor)</button>
+          </label>
           <input type="text" id="signup-access-key" class="input" placeholder="Required to create an account" autocomplete="off" spellcheck="false" required />
         </div>
         <div id="signup-error" class="alert-err" hidden></div>
@@ -596,7 +581,7 @@
           </div>
           <div>
             <label class="field-label" for="app-discord">Discord for questions</label>
-            <input type="text" id="app-discord" class="input" placeholder="discord tag" required />
+            <input type="text" id="app-discord" class="input" placeholder="Discord User" required />
           </div>
         </div>
         <div>
