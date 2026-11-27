@@ -22,17 +22,26 @@ if (fs.existsSync(envPath)) {
   }
 }
 
+function cleanEnvValue(value) {
+  return String(value || '').trim().replace(/^['"]+|['"]+$/g, '').trim();
+}
+
+function isStripeSecretKey(value) {
+  return /^(sk|rk)_(test|live)_/.test(value) && !value.includes('replace_me');
+}
+
+function stripeSecretMode(value) {
+  return value.startsWith('sk_live_') || value.startsWith('rk_live_') ? 'live' : 'test';
+}
+
 const PORT = Number(process.env.PORT || 8080);
 const BASE_URL = process.env.BASE_URL || `http://127.0.0.1:${PORT}`;
-const STRIPE_SECRET_KEY = (process.env.STRIPE_SECRET_KEY || '').trim();
-const STRIPE_PUBLISHABLE_KEY = (process.env.STRIPE_PUBLISHABLE_KEY || '').trim();
-const STRIPE_WEBHOOK_SECRET = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
-const PAYPAL_BUSINESS_EMAIL = (process.env.PAYPAL_BUSINESS_EMAIL || 'eurgeee@gmail.com').trim();
+const STRIPE_SECRET_KEY = cleanEnvValue(process.env.STRIPE_SECRET_KEY);
+const STRIPE_PUBLISHABLE_KEY = cleanEnvValue(process.env.STRIPE_PUBLISHABLE_KEY);
+const STRIPE_WEBHOOK_SECRET = cleanEnvValue(process.env.STRIPE_WEBHOOK_SECRET);
+const PAYPAL_BUSINESS_EMAIL = cleanEnvValue(process.env.PAYPAL_BUSINESS_EMAIL || 'eurgeee@gmail.com');
 
-const hasRealStripeKey =
-  Boolean(STRIPE_SECRET_KEY) &&
-  !STRIPE_SECRET_KEY.includes('replace_me') &&
-  (STRIPE_SECRET_KEY.startsWith('sk_test_') || STRIPE_SECRET_KEY.startsWith('sk_live_'));
+const hasRealStripeKey = isStripeSecretKey(STRIPE_SECRET_KEY);
 
 let stripe = null;
 if (hasRealStripeKey) {
@@ -374,9 +383,7 @@ app.get('/api/public/config', (req, res) => {
 
   res.json({
     settings: store.settings,
-    stripeMode: hasRealStripeKey
-      ? STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test'
-      : 'sandbox',
+    stripeMode: hasRealStripeKey ? stripeSecretMode(STRIPE_SECRET_KEY) : 'sandbox',
     hasPublishableKey: Boolean(STRIPE_PUBLISHABLE_KEY) && !STRIPE_PUBLISHABLE_KEY.includes('replace_me'),
     hasWebhookSecret: Boolean(STRIPE_WEBHOOK_SECRET) && !STRIPE_WEBHOOK_SECRET.includes('replace_me'),
     liveStats: {
@@ -390,9 +397,7 @@ app.get('/api/public/config', (req, res) => {
 app.get('/api/stripe/status', (req, res) => {
   res.json({
     connected: hasRealStripeKey,
-    mode: hasRealStripeKey
-      ? STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test'
-      : 'sandbox',
+    mode: hasRealStripeKey ? stripeSecretMode(STRIPE_SECRET_KEY) : 'sandbox',
     hasPublishableKey: Boolean(STRIPE_PUBLISHABLE_KEY) && !STRIPE_PUBLISHABLE_KEY.includes('replace_me'),
     hasSecretKey: hasRealStripeKey,
     hasWebhookSecret: Boolean(STRIPE_WEBHOOK_SECRET) && !STRIPE_WEBHOOK_SECRET.includes('replace_me'),
@@ -531,7 +536,7 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
       saveStore(store);
 
       return res.json({
-        mode: STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'stripe_live' : 'stripe_test',
+        mode: stripeSecretMode(STRIPE_SECRET_KEY) === 'live' ? 'stripe_live' : 'stripe_test',
         checkoutUrl: session.url,
         sessionId: session.id,
         order
@@ -835,9 +840,7 @@ app.get('/api/admin/overview', requireAuth, (req, res) => {
     chart7d: buildChart7d(visibleOrders),
     stripe: {
       connected: hasRealStripeKey,
-      mode: hasRealStripeKey
-        ? STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test'
-        : 'sandbox',
+      mode: hasRealStripeKey ? stripeSecretMode(STRIPE_SECRET_KEY) : 'sandbox',
       hasPublishableKey: Boolean(STRIPE_PUBLISHABLE_KEY) && !STRIPE_PUBLISHABLE_KEY.includes('replace_me'),
       hasSecretKey: hasRealStripeKey,
       hasWebhookSecret: Boolean(STRIPE_WEBHOOK_SECRET) && !STRIPE_WEBHOOK_SECRET.includes('replace_me'),
@@ -1066,7 +1069,7 @@ async function start() {
   }
   loadSessions();
   app.listen(PORT, '0.0.0.0', () => {
-    const stripeMode = !hasRealStripeKey ? 'sandbox' : (STRIPE_SECRET_KEY.startsWith('sk_live_') ? 'live' : 'test');
+    const stripeMode = hasRealStripeKey ? stripeSecretMode(STRIPE_SECRET_KEY) : 'sandbox';
     console.log(`Relay server listening at ${BASE_URL} (Stripe mode: ${stripeMode})`);
   });
 }

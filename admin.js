@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
     $('#stripe-diag-body').innerHTML =
-      item('STRIPE_SECRET_KEY', s.hasSecretKey, s.hasSecretKey ? 'Loaded from environment' : 'Add sk_test_... or sk_live_... to .env') +
+      item('STRIPE_SECRET_KEY', s.hasSecretKey, s.hasSecretKey ? 'Loaded from environment' : 'Add an sk_ or rk_ test/live key on the host') +
       item('STRIPE_PUBLISHABLE_KEY', s.hasPublishableKey, s.hasPublishableKey ? 'Loaded from environment' : 'Add pk_test_... or pk_live_... to .env') +
       item('STRIPE_WEBHOOK_SECRET', s.hasWebhookSecret, s.webhookEndpoint);
 
