@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const security = require('./security');
 
 // Load simple .env file if present (zero extra dependencies)
 const envPath = path.join(__dirname, '.env');
@@ -324,7 +325,31 @@ function calculateCommission(gross, rail, vendor) {
 }
 
 const app = express();
+app.disable('x-powered-by');
 app.set('trust proxy', 1);
+app.use(security.helmetMiddleware());
+app.use(security.pluginCors);
+
+const authLimiter = security.makeLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Too many sign-in attempts. Try again later.'
+});
+const payLimiter = security.makeLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  message: 'Too many checkout requests. Try again later.'
+});
+const applyLimiter = security.makeLimiter({
+  windowMs: 60 * 60 * 1000,
+  max: 8,
+  message: 'Too many applications. Try again later.'
+});
+const adminLimiter = security.makeLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 80,
+  message: 'Too many admin requests. Try again later.'
+});
 
 // ---------------------------------------------------------------------------
 // Stripe Webhook Endpoint (MUST receive raw body before express.json)
@@ -348,7 +373,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    return res.status(400).send('Webhook signature invalid.');
   }
 
   if (event.type === 'checkout.session.completed') {
@@ -372,6 +397,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), (req,
 });
 
 app.use(express.json({ limit: '1mb' }));
+app.use(security.rejectCardFields);
 
 // ---------------------------------------------------------------------------
 // Public Config, Stripe Status & Checkout Plugin API
@@ -419,11 +445,11 @@ app.get('/api/stripe/confirm', async (req, res) => {
     }
     return res.json({ order, paymentStatus: session.payment_status });
   } catch (err) {
-    return res.status(502).json({ error: err.message, order });
+    return res.status(502).json({ error: 'Could not confirm the payment.', order });
   }
 });
 
-app.post('/api/stripe/create-checkout-session', async (req, res) => {
+app.post('/api/stripe/create-checkout-session', payLimiter, security.parseBody(security.schemas.checkout), async (req, res) => {
   try {
     const {
       vendorId = 'vnd_acme01',
@@ -514,7 +540,8 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
       try {
         session = await stripe.checkout.sessions.create(sessionParams);
       } catch (err) {
-        return res.status(400).json({ error: err.message || 'Stripe checkout failed' });
+        security.logSafe(err && err.message ? err.message : 'Stripe checkout failed');
+        return res.status(400).json({ error: 'Checkout could not be started.' });
       }
 
       const order = {
@@ -604,14 +631,15 @@ app.post('/api/stripe/create-checkout-session', async (req, res) => {
       }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Checkout session failed' });
+    security.logSafe(err && err.message ? err.message : 'Checkout session failed');
+    res.status(500).json({ error: 'Checkout session failed' });
   }
 });
 
 const APPLY_INBOX = 'relaywaitlist@gmail.com';
 const CRYPTO_PAYOUTS = ['USDT (TRC-20)', 'USDT (ERC-20)', 'BTC'];
 
-app.post('/api/public/apply', (req, res) => {
+app.post('/api/public/apply', applyLimiter, security.parseBody(security.schemas.apply), (req, res) => {
   if (!store.settings.acceptingApplications) {
     return res.status(403).json({ error: 'New vendor applications are currently paused.' });
   }
@@ -676,19 +704,19 @@ app.post('/api/public/apply', (req, res) => {
 // ---------------------------------------------------------------------------
 // Authentication & Session Endpoints
 // ---------------------------------------------------------------------------
-function startSession(res, user) {
+function startSession(req, res, user) {
   const token = crypto.randomBytes(24).toString('hex');
   const ttlMs = 24 * 3600 * 1000;
   sessions.set(token, { userId: user.id, expiresAt: Date.now() + ttlMs });
   persistSessions();
   res.setHeader(
     'Set-Cookie',
-    `relay_session=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=86400${BASE_URL.startsWith('https://') ? '; Secure' : ''}`
+    `relay_session=${encodeURIComponent(token)}; ${security.cookieFlags(req)}; Max-Age=86400`
   );
   return token;
 }
 
-app.post('/api/auth/signup', (req, res) => {
+app.post('/api/auth/signup', authLimiter, security.parseBody(security.schemas.signup), (req, res) => {
   const { name = '', email = '', password = '', confirmPassword = '' } = req.body || {};
   const cleanName = String(name).trim().slice(0, 80);
   const normalizedEmail = String(email).trim().toLowerCase();
@@ -717,14 +745,14 @@ app.post('/api/auth/signup', (req, res) => {
   });
   store.users.push(user);
   saveStore(store);
-  const token = startSession(res, user);
+  const token = startSession(req, res, user);
   res.status(201).json({
     token,
     user: { id: user.id, name: user.name, email: user.email, role: user.role }
   });
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', authLimiter, security.parseBody(security.schemas.login), (req, res) => {
   const { email = '', password = '' } = req.body || {};
   const normalizedEmail = String(email).trim().toLowerCase();
   const user = store.users.find((u) => u.email === normalizedEmail && u.active);
@@ -737,15 +765,11 @@ app.post('/api/auth/login', (req, res) => {
   }
 
   const attemptHash = hashPassword(String(password), user.salt);
-  const match = crypto.timingSafeEqual(
-    Buffer.from(attemptHash, 'hex'),
-    Buffer.from(user.passwordHash, 'hex')
-  );
-  if (!match) {
+  if (!security.passwordsMatch(attemptHash, user.passwordHash)) {
     return res.status(401).json({ error: 'Invalid email or password.' });
   }
 
-  const token = startSession(res, user);
+  const token = startSession(req, res, user);
   res.json({
     token,
     user: {
@@ -759,7 +783,7 @@ app.post('/api/auth/login', (req, res) => {
   });
 });
 
-app.post('/api/auth/account', (req, res) => {
+app.post('/api/auth/account', authLimiter, security.parseBody(security.schemas.account), (req, res) => {
   const sessionUser = getSessionUser(req);
   if (!sessionUser) return res.status(401).json({ error: 'Sign in again.' });
   const user = store.users.find((item) => item.id === sessionUser.id && item.active);
@@ -767,8 +791,9 @@ app.post('/api/auth/account', (req, res) => {
 
   const { name = '', email = '', currentPassword = '', newPassword = '' } = req.body || {};
   const attemptHash = hashPassword(String(currentPassword), user.salt);
-  const passwordOk = crypto.timingSafeEqual(Buffer.from(attemptHash, 'hex'), Buffer.from(user.passwordHash, 'hex'));
-  if (!passwordOk) return res.status(401).json({ error: 'Current password is wrong.' });
+  if (!security.passwordsMatch(attemptHash, user.passwordHash)) {
+    return res.status(401).json({ error: 'Current password is wrong.' });
+  }
 
   const cleanName = String(name).trim().slice(0, 80);
   if (cleanName.length < 2) return res.status(400).json({ error: 'Enter your name.' });
@@ -799,7 +824,7 @@ app.post('/api/auth/logout', (req, res) => {
   const cookies = parseCookies(req);
   if (cookies.relay_session) sessions.delete(cookies.relay_session);
   persistSessions();
-  res.setHeader('Set-Cookie', 'relay_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0');
+  res.setHeader('Set-Cookie', `relay_session=; ${security.cookieFlags(req)}; Max-Age=0`);
   res.json({ ok: true });
 });
 
@@ -811,6 +836,7 @@ app.get('/api/auth/me', (req, res) => {
 // ---------------------------------------------------------------------------
 // Admin Control Plane API
 // ---------------------------------------------------------------------------
+app.use('/api/admin', adminLimiter);
 app.get('/api/admin/overview', requireAuth, (req, res) => {
   const isAdmin = ['super_admin', 'admin', 'operator'].includes(req.user.role);
   const vendorScope = isAdmin ? null : (req.user.vendorId || null);
@@ -1050,6 +1076,7 @@ app.get(['/admin', '/admin.html'], (req, res) => {
 });
 
 app.use(express.static(__dirname, { extensions: ['html'] }));
+app.use(security.errorHandler);
 
 async function start() {
   if (database.enabled()) {
@@ -1061,7 +1088,7 @@ async function start() {
       await database.writeNow(store);
     } catch (err) {
       console.error('Could not open the MySQL database. Wait until Aiven says Running, then set DATABASE_URL on the relay web service to the copied Service URI.');
-      console.error(err.message);
+      security.logSafe(err && err.message ? err.message : 'MySQL init failed');
       process.exit(1);
     }
   } else {

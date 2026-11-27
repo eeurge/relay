@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const { logSafe } = require('./security');
 
 let pool = null;
 let saveChain = Promise.resolve();
@@ -79,7 +80,7 @@ function queueSave(data) {
   saveChain = saveChain
     .then(() => writePayload(payload))
     .catch((err) => {
-      console.error('MySQL save failed:', err.message);
+      logSafe(`MySQL save failed: ${err && err.message ? err.message : 'unknown error'}`);
     });
 }
 
