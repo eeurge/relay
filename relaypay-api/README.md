@@ -11,9 +11,9 @@ Set these on the API web service (do not put values in git):
 - `DATABASE_URL`
 - `SIGNUP_ACCESS_KEY`
 
-`DATABASE_URL` is the Aiven MySQL Service URI (`mysql://...`). The server creates `rp_users` and `rp_sessions` on boot. New Google accounts also need `SIGNUP_ACCESS_KEY`. Existing accounts can sign in without it.
+`DATABASE_URL` is the Aiven MySQL Service URI (`mysql://...`). The server creates `rp_users` and `rp_sessions` on boot.
 
-The homepage prefers same-origin `/api/auth/google` on the main Relay web service. Set `GOOGLE_CLIENT_ID` and `SIGNUP_ACCESS_KEY` there too.
+The live site uses same-origin Google OAuth on the main Relay web service (`GET /api/auth/google/start` and `GET /api/auth/google/callback`). Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` there. Google sign-in creates or links the account without `SIGNUP_ACCESS_KEY`; that key is only for email/password signup.
 
 Bind the service to `https://api.relaypayus.shop`.
 

@@ -705,16 +705,87 @@ app.post('/api/public/apply', applyLimiter, security.parseBody(security.schemas.
 // ---------------------------------------------------------------------------
 // Authentication & Session Endpoints
 // ---------------------------------------------------------------------------
+function appendCookie(res, cookie) {
+  const prev = res.getHeader('Set-Cookie');
+  if (!prev) {
+    res.setHeader('Set-Cookie', cookie);
+    return;
+  }
+  const list = Array.isArray(prev) ? prev.slice() : [String(prev)];
+  list.push(cookie);
+  res.setHeader('Set-Cookie', list);
+}
+
 function startSession(req, res, user) {
   const token = crypto.randomBytes(24).toString('hex');
   const ttlMs = 24 * 3600 * 1000;
   sessions.set(token, { userId: user.id, expiresAt: Date.now() + ttlMs });
   persistSessions();
-  res.setHeader(
-    'Set-Cookie',
+  appendCookie(
+    res,
     `relay_session=${encodeURIComponent(token)}; ${security.cookieFlags(req)}; Max-Age=86400`
   );
   return token;
+}
+
+function clearSessionCookie(req, res) {
+  appendCookie(res, `relay_session=; ${security.cookieFlags(req)}; Max-Age=0`);
+}
+
+function clearOauthCookie(req, res) {
+  appendCookie(res, `${googleAuth.OAUTH_COOKIE}=; ${security.cookieFlags(req)}; Max-Age=0`);
+}
+
+function setOauthCookie(req, res, value) {
+  const maxAge = Math.floor(googleAuth.OAUTH_TTL_MS / 1000);
+  appendCookie(
+    res,
+    `${googleAuth.OAUTH_COOKIE}=${encodeURIComponent(value)}; ${security.cookieFlags(req)}; Max-Age=${maxAge}`
+  );
+}
+
+function oauthFailRedirect(req, res, code, nextPath) {
+  clearOauthCookie(req, res);
+  const dest = googleAuth.safeNextPath(nextPath);
+  return res.redirect(`${dest}?auth_error=${encodeURIComponent(code)}`);
+}
+
+async function findOrCreateGoogleUser(profile) {
+  let user = store.users.find((item) => item.active && item.googleSub === profile.googleSub);
+  if (!user) {
+    user = store.users.find((item) => item.active && item.email === profile.email);
+  }
+  if (!user) {
+    user = makeUserRecord({
+      id: `usr_${crypto.randomBytes(6).toString('hex')}`,
+      name: profile.name,
+      email: profile.email,
+      password: crypto.randomBytes(24).toString('hex'),
+      role: 'member',
+      temp: false,
+      expiresAt: null,
+      note: 'Google sign-in'
+    });
+    user.googleSub = profile.googleSub;
+    user.picture = profile.picture;
+    store.users.push(user);
+    saveStore(store);
+  } else {
+    let dirty = false;
+    if (!user.googleSub) {
+      user.googleSub = profile.googleSub;
+      dirty = true;
+    }
+    if (profile.picture && user.picture !== profile.picture) {
+      user.picture = profile.picture;
+      dirty = true;
+    }
+    if (dirty) saveStore(store);
+  }
+  try {
+    await database.upsertGoogleIdentity(profile);
+  } catch {}
+  return user;
 }
 
 app.post('/api/auth/signup', authLimiter, security.parseBody(security.schemas.signup), (req, res) => {
@@ -757,7 +828,64 @@ app.post('/api/auth/signup', authLimiter, security.parseBody(security.schemas.si
 });
 
 app.get('/api/auth/google-config', (_req, res) => {
-  res.json({ googleClientId: googleAuth.googleClientId() });
+  res.json({
+    googleClientId: googleAuth.googleClientId(),
+    configured: googleAuth.googleOAuthConfigured()
+  });
+});
+
+app.get('/api/auth/google/start', authLimiter, (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const nextPath = googleAuth.safeNextPath(req.query.next);
+  if (!googleAuth.googleOAuthConfigured()) {
+    return oauthFailRedirect(req, res, 'not_configured', nextPath);
+  }
+  const handshake = googleAuth.createOauthHandshake(nextPath);
+  const redirectUri = googleAuth.oauthRedirectUri(req);
+  setOauthCookie(req, res, googleAuth.serializeHandshake(handshake));
+  return res.redirect(googleAuth.buildAuthorizeUrl({
+    state: handshake.s,
+    challenge: handshake.c,
+    nonce: handshake.n,
+    redirectUri
+  }));
+});
+
+app.get('/api/auth/google/callback', authLimiter, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  const cookies = parseCookies(req);
+  const handshake = googleAuth.readHandshake(cookies[googleAuth.OAUTH_COOKIE]);
+  const nextPath = handshake ? handshake.p : googleAuth.safeNextPath(req.query.next);
+  if (!googleAuth.googleOAuthConfigured()) {
+    return oauthFailRedirect(req, res, 'not_configured', nextPath);
+  }
+  if (req.query.error) {
+    return oauthFailRedirect(req, res, googleAuth.mapGoogleCallbackError(req.query.error), nextPath);
+  }
+  if (!handshake) {
+    return oauthFailRedirect(req, res, 'expired', nextPath);
+  }
+  if (String(req.query.state || '') !== handshake.s) {
+    return oauthFailRedirect(req, res, 'failed', nextPath);
+  }
+  const code = String(req.query.code || '').trim();
+  if (!code) {
+    return oauthFailRedirect(req, res, 'failed', nextPath);
+  }
+  try {
+    const profile = await googleAuth.completeOAuthLogin({
+      code,
+      handshake,
+      redirectUri: googleAuth.oauthRedirectUri(req)
+    });
+    const user = await findOrCreateGoogleUser(profile);
+    clearOauthCookie(req, res);
+    startSession(req, res, user);
+    return res.redirect(googleAuth.dashboardPathFor(user));
+  } catch (err) {
+    security.logSafe(err && err.message ? err.message : 'Google OAuth callback failed');
+    return oauthFailRedirect(req, res, 'failed', nextPath);
+  }
 });
 
 app.post('/api/auth/google', authLimiter, security.parseBody(security.schemas.google), async (req, res) => {
@@ -766,34 +894,7 @@ app.post('/api/auth/google', authLimiter, security.parseBody(security.schemas.go
       credential: req.body?.credential,
       accessToken: req.body?.accessToken
     });
-    let user = store.users.find((item) => (
-      item.active && (item.googleSub === profile.googleSub || item.email === profile.email)
-    ));
-    if (!user) {
-      if (!googleAuth.accessKeyMatches(req.body?.accessKey)) {
-        return res.status(403).json({ error: 'Access key is invalid.' });
-      }
-      user = makeUserRecord({
-        id: `usr_${crypto.randomBytes(6).toString('hex')}`,
-        name: profile.name,
-        email: profile.email,
-        password: crypto.randomBytes(24).toString('hex'),
-        role: 'member',
-        temp: false,
-        expiresAt: null,
-        note: 'Google sign-in'
-      });
-      user.googleSub = profile.googleSub;
-      user.picture = profile.picture;
-      store.users.push(user);
-      saveStore(store);
-    } else if (!user.googleSub) {
-      user.googleSub = profile.googleSub;
-      saveStore(store);
-    }
-    try {
-      await database.upsertGoogleIdentity(profile);
-    } catch {}
+    const user = await findOrCreateGoogleUser(profile);
     const token = startSession(req, res, user);
     res.json({
       ok: true,
@@ -880,7 +981,8 @@ app.post('/api/auth/logout', (req, res) => {
   const cookies = parseCookies(req);
   if (cookies.relay_session) sessions.delete(cookies.relay_session);
   persistSessions();
-  res.setHeader('Set-Cookie', `relay_session=; ${security.cookieFlags(req)}; Max-Age=0`);
+  clearSessionCookie(req, res);
+  clearOauthCookie(req, res);
   res.json({ ok: true });
 });
 

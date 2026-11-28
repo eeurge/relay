@@ -95,7 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function homeSignOut(openSignIn) {
     closeHomeAccount();
-    await fetch('/api/auth/logout', { method: 'POST' });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
     if (window.RelaypayAuth && typeof window.RelaypayAuth.signOut === 'function') {
       try { await window.RelaypayAuth.signOut(); } catch {}
     }
@@ -464,6 +466,24 @@ if (event.type === 'checkout.session.completed') {
     openModal(signupModal);
     setTimeout(() => $('#signup-name')?.focus(), 50);
   }));
+
+  (function showGoogleAuthError() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('auth_error');
+    if (!code) return;
+    const message = (window.RelaypayAuth && window.RelaypayAuth.authErrorMessage)
+      ? window.RelaypayAuth.authErrorMessage(code)
+      : 'Google sign-in failed. Try again.';
+    const err = $('#signin-error');
+    if (err) {
+      err.hidden = false;
+      err.textContent = message;
+    }
+    openModal(signinModal);
+    params.delete('auth_error');
+    const query = params.toString();
+    history.replaceState({}, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+  })();
 
   $$('[data-fill-login]').forEach((chip) => {
     chip.addEventListener('click', () => {

@@ -27,6 +27,33 @@ Change these under Admin → Temp Logins before the site is public.
 
 Routing other people's payments through one Stripe account needs Stripe Connect or written approval from Stripe. Do that before taking live vendor volume.
 
+## Google sign-in
+
+Relay uses Google's OAuth 2.0 / OpenID Connect authorization code flow with PKCE. The "Continue with Google" button sends the browser to Google's account picker, then Google returns to `/api/auth/google/callback`.
+
+Set these on the main Render service (do not put values in git):
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+
+Email/password signup still uses `SIGNUP_ACCESS_KEY`. Google sign-in does not: a new Google email creates a Relay account, and an existing Relay email is signed in and linked. Duplicate accounts are not created.
+
+In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create a **Web application** OAuth client and set:
+
+**Authorized JavaScript origins**
+
+- `https://relaypayus.shop`
+- `https://www.relaypayus.shop`
+
+**Authorized redirect URIs**
+
+- `https://relaypayus.shop/api/auth/google/callback`
+- `https://www.relaypayus.shop/api/auth/google/callback`
+
+For local work, also add `http://127.0.0.1:8080` and `http://localhost:8080` as origins, and `/api/auth/google/callback` on each of those hosts as redirect URIs.
+
+Set `BASE_URL` to `https://relaypayus.shop` in production.
+
 ## How an application becomes an embed
 
 1. A vendor clicks Apply on the site and submits the form.

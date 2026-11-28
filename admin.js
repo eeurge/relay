@@ -82,7 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function signOut() {
     closeAccountMenu();
-    await fetch('/api/auth/logout', { method: 'POST' });
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {}
+    if (window.RelaypayAuth && typeof window.RelaypayAuth.signOut === 'function') {
+      try { await window.RelaypayAuth.signOut(); } catch {}
+    }
     $('#app-shell').hidden = true;
     $('#auth-gate').hidden = false;
     showDeskPath('/login');
@@ -785,14 +790,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  function showGoogleAuthError() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('auth_error');
+    if (!code) return;
+    const message = (window.RelaypayAuth && window.RelaypayAuth.authErrorMessage)
+      ? window.RelaypayAuth.authErrorMessage(code)
+      : 'Google sign-in failed. Try again.';
+    const err = $('#gate-error');
+    if (err) {
+      err.textContent = message;
+      err.hidden = false;
+    }
+    params.delete('auth_error');
+    const query = params.toString();
+    history.replaceState({}, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+  }
+
   async function initDashboard() {
     try {
-      const meRes = await fetch('/api/auth/me');
+      const meRes = await fetch('/api/auth/me', { credentials: 'include' });
       const me = await meRes.json();
       if (!me.authenticated) {
         $('#app-shell').hidden = true;
         $('#auth-gate').hidden = false;
         showDeskPath('/login');
+        showGoogleAuthError();
         return;
       }
       showDeskPath('/dashboard');

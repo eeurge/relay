@@ -117,6 +117,7 @@ function helmetMiddleware() {
         imgSrc: ["'self'", 'data:', 'https://www.gstatic.com', 'https://lh3.googleusercontent.com'],
         connectSrc: ["'self'", 'https://formsubmit.co', 'https://www.formsubmit.co', 'https://api.relaypayus.shop', 'https://accounts.google.com', 'https://oauth2.googleapis.com', 'https://www.googleapis.com', 'https://apis.google.com'],
         frameSrc: ["'self'", 'https://accounts.google.com'],
+        formAction: ["'self'", 'https://accounts.google.com'],
         frameAncestors: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"]
