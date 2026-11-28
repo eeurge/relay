@@ -2,6 +2,8 @@
 
 Payment middleman site for vendor applications, a drop-in checkout embed, and an admin desk for orders, payouts, and staff logins.
 
+Discord: https://discord.gg/F8StvnkWGn
+
 ## Run it locally
 
 ```bash

@@ -350,7 +350,8 @@ svg { display: block; }
 .mobile-drawer-links a { padding: 10px 12px; border-radius: var(--radius-sm); font-weight: 500; color: var(--text-body); }
 .mobile-drawer-links a:hover { background: rgba(255, 255, 255, 0.06); color: #fff; }
 .mobile-drawer-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mobile-drawer-actions .btn--primary { grid-column: 1 / -1; }
+.mobile-drawer-actions .btn--primary,
+.mobile-drawer-actions .discord-drawer-link { grid-column: 1 / -1; }
 
 /* ==========================================================================
    Hero — Asymmetric Fintech Composition + Live Stripe Sandbox
