@@ -120,7 +120,7 @@ function createInitialStore() {
         paypalEnterprise: 5.5,
         fixedFee: 0.3
       },
-      discordInviteUrl: 'https://discord.gg/F8StvnkWGn'
+      discordInviteUrl: 'https://discord.gg/d5nkxBbttu'
     },
     users: [
       makeUserRecord({
@@ -153,13 +153,9 @@ function createInitialStore() {
 function ensureVendorLogin(store) {
   store.settings = store.settings || {};
   const discordInvite = String(store.settings.discordInviteUrl || '');
-  if (
-    !discordInvite
-    || discordInvite.includes('your-invite-code')
-    || discordInvite.includes('ky3qukfrA')
-    || discordInvite.includes('VVe5fYYT')
-  ) {
-    store.settings.discordInviteUrl = 'https://discord.gg/F8StvnkWGn';
+  const staleDiscordInvites = ['your-invite-code', 'ky3qukfrA', 'VVe5fYYT', 'F8StvnkWGn'];
+  if (!discordInvite || staleDiscordInvites.some((code) => discordInvite.includes(code))) {
+    store.settings.discordInviteUrl = 'https://discord.gg/d5nkxBbttu';
   }
   store.settings.commissions = store.settings.commissions || {};
   const commissions = store.settings.commissions;

@@ -2,7 +2,7 @@
 
 Payment middleman site for vendor applications, a drop-in checkout embed, and an admin desk for orders, payouts, and staff logins.
 
-Discord: https://discord.gg/F8StvnkWGn
+Discord: https://discord.gg/d5nkxBbttu
 
 ## Run it locally
 
